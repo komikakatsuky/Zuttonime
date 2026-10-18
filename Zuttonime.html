@@ -1,0 +1,3854 @@
+<div class="anime-app-container" id="app-root">
+  <style>
+    :root {
+      --primary-color: #e53935;
+      --primary-hover: #c62828;
+      --bg-color: #f9f9f9;
+      --box-bg: #ffffff;
+      --text-color: #333333;
+      --text-muted: #666666;
+      --border-color: #e0e0e0;
+      --card-bg: #ffffff;
+      --nav-bg: #1a237e;
+      --chat-bg: #efeae2;
+      --chat-other-bg: #ffffff;
+      --chat-other-text: #222222;
+      --chat-me-bg: #dcf8c6;
+      --chat-me-text: #000000;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --box-bg: #1e1e1e;
+      --text-color: #e0e0e0;
+      --text-muted: #b0b0b0;
+      --border-color: #333333;
+      --card-bg: #242424;
+      --nav-bg: #0f143d;
+      --chat-bg: #0b141a;
+      --chat-other-bg: #202c33;
+      --chat-other-text: #e9edef;
+      --chat-me-bg: #005c4b;
+      --chat-me-text: #e9edef;
+    }
+
+    *, *:before, *:after { box-sizing: border-box; }
+
+    .anime-app-container {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      width: 95%;
+      margin: 20px auto;
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
+      position: relative;
+      z-index: 1;
+      overflow: visible;
+    }
+    .box {
+      background: var(--box-bg);
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
+      position: relative;
+    }
+    .anime-app-container input, 
+    .anime-app-container select, 
+    .anime-app-container textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: var(--box-bg);
+      color: var(--text-color);
+      font-size: 15px;
+      outline: none;
+    }
+    .anime-app-container button {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 9px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 5px;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    .anime-app-container button:hover { background-color: var(--primary-hover); }
+    .btn-secondary { background-color: #757575 !important; }
+    .btn-danger { background-color: #d32f2f !important; font-size: 0.75em; padding: 4px 8px; }
+    .btn-edit { background-color: #ff9800 !important; font-size: 0.75em; padding: 4px 8px; }
+    .btn-bookmark { background-color: #ffc107 !important; color: #000 !important; font-size: 0.75em; padding: 4px 8px; font-weight: bold; }
+    .btn-load-more { width: 100%; background: transparent !important; color: var(--primary-color) !important; border: 1px dashed var(--primary-color) !important; margin: 10px 0; font-weight: bold; padding: 8px; border-radius: 6px; }
+    .btn-load-more:hover { background: rgba(229,57,53,0.08) !important; }
+    .hidden { display: none !important; }
+
+    .app-icon {
+      display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; fill: currentColor; flex-shrink: 0;
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, var(--border-color) 25%, var(--box-bg) 50%, var(--border-color) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .skeleton-card {
+      display: flex; gap: 12px; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: var(--card-bg); width: 100%; align-items: center;
+    }
+    .skeleton-poster { width: 105px; height: 145px; border-radius: 6px; flex-shrink: 0; }
+    .skeleton-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .skeleton-line { height: 14px; width: 100%; border-radius: 4px; }
+    .skeleton-line.short { width: 60%; }
+    .skeleton-line.medium { width: 80%; }
+
+    .search-wrapper { position: relative; margin-bottom: 15px; width: 100%; }
+    .search-suggestions-box {
+      position: absolute; top: calc(100% + 2px); left: 0; right: 0;
+      background: var(--box-bg); border: 1.5px solid var(--primary-color);
+      border-radius: 8px; z-index: 9999; max-height: 240px; overflow-y: auto;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.18); padding: 4px;
+    }
+    .search-suggestion-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+      cursor: pointer; border-radius: 4px; color: var(--text-color); text-decoration: none; border-bottom: 1.5px solid var(--primary-color);
+    }
+    .search-suggestion-item:hover {
+      background: rgba(229, 57, 53, 0.12); color: var(--primary-color);
+    }
+    .search-suggestion-img { width: 32px; height: 45px; object-fit: cover; border-radius: 3px; background: #222; flex-shrink: 0; }
+
+    .avatar-frame {
+      display: inline-flex; align-items: center; justify-content: center; padding: 2px; border-radius: 50%; background: #ccc; vertical-align: middle; cursor: pointer; flex-shrink: 0;
+    }
+    .border-none { background: transparent; }
+    .border-gold { background: linear-gradient(45deg, #ffd700, #ffa500, #fff8dc); box-shadow: 0 0 6px rgba(255, 215, 0, 0.6); }
+    .border-neon { background: linear-gradient(45deg, #00f2fe, #4facfe); box-shadow: 0 0 6px rgba(79, 172, 254, 0.7); }
+    .border-cyber { background: linear-gradient(45deg, #ff0055, #7a00ff); box-shadow: 0 0 6px rgba(255, 0, 85, 0.7); }
+    .border-rainbow { background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet); }
+
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block; background: #bbb; }
+    
+    .nav-bar {
+      display: flex; justify-content: space-between; align-items: center; background: var(--nav-bg); color: white; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .nav-links-wrapper { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .nav-bar a { color: white; text-decoration: none; font-size: 0.9em; transition: opacity 0.2s; }
+    .nav-bar a:hover { opacity: 0.85; }
+    .nav-user-info { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+    @media (max-width: 768px) {
+      .nav-bar {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+        padding: 12px;
+      }
+      .nav-bar > div:first-child {
+        margin-bottom: 4px;
+        font-size: 1.1em;
+      }
+      .nav-links-wrapper {
+        justify-content: center;
+        gap: 8px;
+        border-top: 1px solid rgba(255,255,255,0.15);
+        padding-top: 10px;
+      }
+      .nav-bar a {
+        margin-left: 0;
+        padding: 5px 10px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 4px;
+        font-size: 0.85em;
+      }
+    }
+
+    .tab-nav { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
+    .tab-btn { background: #ddd; color: #333; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+    .tab-btn.active { background: var(--primary-color); color: white; }
+
+    .customizer-panel {
+      display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 10px 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border-color); font-size: 0.9em; flex-wrap: wrap; gap: 10px;
+    }
+    .theme-options { display: flex; align-items: center; gap: 10px; }
+
+    .profile-card { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--box-bg); }
+    .profile-banner { height: 180px; background-size: cover; background-position: center; background-color: #3f51b5; position: relative; overflow: hidden; }
+    .profile-banner video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+    .profile-body { padding: 15px; position: relative; }
+    .profile-avatar-wrapper { margin-top: -65px; margin-bottom: 10px; }
+    .profile-avatar-wrapper .user-avatar { width: 70px; height: 70px; border: 3px solid var(--box-bg); }
+    .status-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; }
+    .status-online { background-color: #4caf50; }
+    .status-offline { background-color: #9e9e9e; }
+    
+    .profile-uploads-section { margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px; }
+    .profile-uploads-list { display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto; margin-top: 6px; }
+    .user-upload-item-link { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); text-decoration: none; font-size: 0.82em; transition: border-color 0.2s; }
+    .user-upload-item-link:hover { border-color: var(--primary-color); color: var(--primary-color); }
+
+    .telegram-chat-container { border: 1px solid var(--border-color); border-radius: 8px; overflow: visible; margin-top: 25px; background: var(--chat-bg); position: relative; }
+    .telegram-chat-header { background: var(--nav-bg); color: white; padding: 10px 15px; font-weight: bold; font-size: 0.95em; display: flex; align-items: center; gap: 8px; border-top-left-radius: 7px; border-top-right-radius: 7px; }
+    .chat-messages-box { height: 380px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+    .chat-item { display: flex; gap: 8px; max-width: 100%; align-items: flex-start; position: relative; }
+    .chat-item.other { align-self: flex-start; width: 100%; }
+    .chat-item.me { align-self: flex-end; flex-direction: row-reverse; width: 100%; justify-content: flex-start; }
+    
+    .chat-bubble {
+      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 14px; font-size: 0.9em; word-break: break-word; overflow-wrap: anywhere; line-height: 1.45; box-shadow: 0 1px 3px rgba(0,0,0,0.04); position: relative; width: 100%; max-width: 100%; cursor: pointer;
+    }
+    .chat-item.other .chat-bubble { background: var(--chat-other-bg); color: var(--chat-other-text); }
+    .chat-item.me .chat-bubble { background: var(--chat-me-bg); color: var(--chat-me-text); }
+    
+    .chat-header-info { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .chat-author { font-weight: bold; font-size: 0.82em; color: var(--primary-color); cursor: pointer; }
+    .chat-time { font-size: 0.7em; color: var(--text-muted); margin-left: auto; white-space: nowrap; }
+    
+    .reply-quote-box { background: rgba(0,0,0,0.08); border-left: 3px solid var(--primary-color); padding: 4px 8px; border-radius: 4px; font-size: 0.8em; margin-bottom: 6px; cursor: pointer; word-break: break-all; }
+    .reply-quote-box:hover { opacity: 0.8; }
+    
+    .chat-footer-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(0,0,0,0.1); font-size: 0.75em; color: var(--text-muted); align-items: center; }
+    .chat-footer-actions span { cursor: pointer; }
+    .chat-footer-actions span:hover { color: var(--primary-color); text-decoration: underline; }
+
+    .highlight-msg { animation: highlightPulse 2s ease; }
+    @keyframes highlightPulse {
+      0% { background-color: rgba(229, 57, 53, 0.4); }
+      100% { background-color: transparent; }
+    }
+
+    .media-display-box { width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; margin: 5px 0; display: block; background: #000; }
+    .btn-save-sticker { width: 100%; background: rgba(229,57,53,0.1) !important; color: var(--primary-color) !important; border: 1px solid var(--primary-color) !important; border-radius: 12px !important; padding: 4px !important; font-size: 0.75em !important; margin-top: 4px; }
+
+    .sticker-modal-panel {
+      position: fixed; 
+      top: 50%; 
+      left: 50%; 
+      transform: translate(-50%, -50%); 
+      width: 90%; 
+      max-width: 420px; 
+      background: var(--box-bg); 
+      border: 1px solid var(--border-color); 
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35); 
+      border-radius: 10px; 
+      padding: 16px; 
+      z-index: 10002; 
+      animation: fadeInPopup 0.18s ease-out;
+    }
+    .sticker-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: bold; font-size: 1em; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+    .sticker-tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .sticker-tab-btn { background: transparent !important; color: var(--text-muted) !important; padding: 5px 10px !important; font-size: 0.82em !important; cursor: pointer; border-radius: 4px !important; }
+    .sticker-tab-btn.active { color: white !important; background: var(--primary-color) !important; font-weight: bold; }
+    .sticker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 240px; overflow-y: auto; padding: 4px; }
+    .sticker-item { aspect-ratio: 1/1; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); cursor: pointer; position: relative; background: var(--card-bg); }
+    .sticker-item img { width: 100%; height: 100%; object-fit: cover; }
+
+    .reaction-container { margin: 20px 0; padding: 15px; background: var(--box-bg); border: 1px solid var(--border-color); border-radius: 8px; text-align: center; }
+    .reaction-group { 
+      display: grid; 
+      grid-template-columns: repeat(5, 1fr); 
+      gap: 6px; 
+      max-width: 500px; 
+      margin: 0 auto; 
+    }
+    .reaction-btn { 
+      background: var(--card-bg); 
+      border: 1px solid var(--border-color); 
+      color: var(--text-color); 
+      padding: 6px 2px; 
+      border-radius: 12px; 
+      cursor: pointer; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 0.75em; 
+      text-align: center;
+      gap: 2px;
+      transition: all 0.2s;
+    }
+    .reaction-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); font-weight: bold; }
+    .reaction-btn .emoji { font-size: 1.2em; }
+    .reaction-btn .count { font-weight: bold; }
+    
+    .msg-reaction-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+    .msg-react-badge { background: rgba(0,0,0,0.08); border-radius: 12px; padding: 2px 8px; font-size: 0.75em; cursor: pointer; border: 1px solid var(--border-color); display: inline-flex; align-items: center; gap: 4px; }
+    .msg-react-badge.active { border-color: var(--primary-color); background: rgba(229,57,53,0.15); font-weight: bold; }
+
+    .reaction-overlay {
+      position: absolute; background: var(--box-bg); border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.25); border-radius: 24px; padding: 6px 10px; display: flex; gap: 8px; z-index: 999; bottom: calc(100% + 5px); left: 10px; animation: fadeInPopup 0.15s ease-out;
+    }
+    @keyframes fadeInPopup {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .reaction-overlay span { cursor: pointer; font-size: 1.25em; transition: transform 0.2s; }
+    .reaction-overlay span:hover { transform: scale(1.35); }
+
+    .comment-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); position: relative; }
+    .comment-header-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .comment-body-text { font-size: 0.9em; line-height: 1.45; color: var(--text-color); word-break: break-word; overflow-wrap: anywhere; cursor: pointer; margin-top: 4px; }
+    .comment-footer-row { display: flex; justify-content: flex-end; gap: 12px; margin-top: 6px; font-size: 0.78em; color: var(--text-muted); }
+    .comment-footer-row span { cursor: pointer; }
+    .comment-footer-row span:hover { color: var(--primary-color); text-decoration: underline; }
+    
+    .replies-container { margin-left: 16px; padding-left: 10px; border-left: 3px solid var(--primary-color); margin-top: 10px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .nested-comment { margin-bottom: 0 !important; background: rgba(0,0,0,0.015); }
+
+    .reply-preview-box { background: var(--card-bg); padding: 8px 12px; font-size: 0.85em; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
+
+    .anime-filter-wrapper { margin-bottom: 20px; width: 100%; position: relative; }
+    
+    .filter-grid { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 10px; 
+      margin-bottom: 15px; 
+      width: 100%; 
+    }
+    @media (min-width: 768px) {
+      .filter-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .filter-box-item { 
+      background: var(--box-bg); 
+      border: 1px solid var(--border-color); 
+      border-radius: 8px; 
+      width: 100%; 
+      position: relative; 
+    }
+    .filter-box-item.open { z-index: 1000; }
+    
+    .custom-select { position: relative; background: var(--box-bg); border-radius: 8px; font-size: 0.88em; cursor: pointer; user-select: none; width: 100%; }
+    .select-trigger { 
+      padding: 10px 12px; 
+      width: 100%; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      font-weight: bold; 
+      color: var(--text-color); 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+    }
+    .select-trigger::after {
+      content: ""; display: inline-block; width: 0; height: 0; margin-left: 6px; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid var(--primary-color); transition: transform 0.2s; flex-shrink: 0;
+    }
+    .custom-select.open .select-trigger::after { transform: rotate(180deg); }
+
+    .select-options {
+      display: none; 
+      position: absolute; 
+      top: calc(100% + 4px); 
+      background: var(--box-bg); 
+      border: 1.5px solid var(--primary-color); 
+      border-radius: 8px; 
+      z-index: 9999; 
+      max-height: 260px; 
+      overflow-y: auto; 
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2); 
+      padding: 6px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    @media (min-width: 768px) {
+      .select-options {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 767px) {
+      .filter-box-item:nth-child(odd) .select-options {
+        left: 0;
+        width: calc(200% + 10px);
+      }
+      .filter-box-item:nth-child(even) .select-options {
+        left: calc(-100% - 10px);
+        width: calc(200% + 10px);
+      }
+    }
+
+    @media (min-width: 768px) {
+      .filter-box-item:nth-child(3n+1) .select-options {
+        left: 0;
+        width: calc(300% + 20px);
+      }
+      .filter-box-item:nth-child(3n+2) .select-options {
+        left: calc(-100% - 10px);
+        width: calc(300% + 20px);
+      }
+      .filter-box-item:nth-child(3n) .select-options {
+        left: calc(-200% - 20px);
+        width: calc(300% + 20px);
+      }
+    }
+
+    .custom-select.open .select-options { 
+      display: grid !important; 
+    }
+
+    #f-genre .genre-options-grid {
+      grid-column: 1 / -1; 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 6px; 
+      padding: 2px; 
+      width: 100%;
+    }
+    @media (min-width: 768px) {
+      #f-genre .genre-options-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .option-item { 
+      padding: 8px 10px; 
+      color: var(--text-color); 
+      font-size: 0.85em; 
+      border-radius: 4px; 
+      margin: 0; 
+      word-break: break-word; 
+      text-align: center;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .option-item:hover, .option-item.selected { background: rgba(229, 57, 53, 0.12); color: var(--primary-color); font-weight: bold; border-color: var(--primary-color); }
+    
+    .genre-checkbox-item { 
+      display: flex; 
+      align-items: center; 
+      gap: 6px; 
+      font-size: 0.8em; 
+      cursor: pointer; 
+      color: var(--text-color); 
+      background: var(--card-bg); 
+      border: 1px solid var(--border-color); 
+      padding: 6px 8px; 
+      border-radius: 4px; 
+      white-space: nowrap;
+    }
+    .genre-checkbox-item input { width: auto !important; margin: 0 !important; cursor: pointer; }
+    .genre-checkbox-item:hover { border-color: var(--primary-color); }
+
+    .grid-switcher-container {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%; flex-wrap: wrap; gap: 10px;
+    }
+    .grid-switcher-buttons { display: flex; gap: 6px; background: var(--box-bg); border: 1px solid var(--border-color); padding: 4px; border-radius: 8px; }
+    .grid-icon-btn {
+      background: transparent; border: none; color: var(--text-muted); padding: 6px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-right: 0 !important;
+    }
+    .grid-icon-btn.active { background: var(--primary-color) !important; color: white !important; }
+    .grid-icon-btn:hover:not(.active) { background: rgba(0,0,0,0.05); color: var(--text-color); }
+
+    .grid-layout-1 { display: grid; gap: 12px; width: 100%; }
+    .grid-layout-1 .anime-card { 
+      display: flex; gap: 12px; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: var(--card-bg); width: 100%; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .grid-layout-1 .anime-poster-wrapper { width: 105px; height: 145px; border-radius: 6px; overflow: hidden; flex-shrink: 0; position: relative; }
+    .grid-layout-1 .anime-poster { width: 100%; height: 100%; object-fit: cover; }
+    .grid-layout-1 .anime-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; }
+
+    .grid-layout-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; width: 100%; }
+    .grid-layout-2 .anime-card { 
+      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .grid-layout-2 .anime-poster-wrapper { width: 100%; height: 190px; position: relative; overflow: hidden; }
+    .grid-layout-2 .anime-poster { width: 100%; height: 100%; object-fit: cover; }
+    .grid-layout-2 .anime-info { padding: 8px; display: flex; flex-direction: column; flex: 1; justify-content: space-between; min-width: 0; gap: 6px; }
+
+    .grid-layout-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; width: 100%; }
+    .grid-layout-3 .anime-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; display: flex; gap: 10px; align-items: center; }
+    .grid-layout-3 .anime-poster-wrapper { width: 50px; height: 70px; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+    .grid-layout-3 .anime-poster { width: 100%; height: 100%; object-fit: cover; }
+    .grid-layout-3 .anime-info { flex: 1; overflow: hidden; min-width: 0; }
+
+    .card-badge-rating { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.75); color: #ffc107; padding: 2px 6px; border-radius: 4px; font-size: 0.72em; font-weight: bold; backdrop-filter: blur(2px); }
+    .card-badge-status { position: absolute; top: 6px; right: 6px; background: var(--primary-color); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; font-weight: bold; }
+    
+    .anime-title { margin: 0 0 4px; font-size: 0.95em; line-height: 1.3; font-weight: bold; word-break: break-word; }
+    .anime-title a { color: var(--text-color); text-decoration: none; }
+    .anime-title a:hover { color: var(--primary-color); }
+    
+    .ep-link {
+      display: inline-block; background: var(--box-bg); color: var(--text-color); padding: 3px 6px; border-radius: 4px; margin: 2px 0; font-size: 0.78em; text-decoration: none; border: 1px solid var(--border-color); width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+    }
+    .ep-link:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+    
+    .card-action-btns { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+
+    .series-detail-card {
+      display: flex; gap: 20px; flex-wrap: wrap; background: var(--card-bg); border: 1px solid var(--border-color); padding: 18px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .series-detail-poster {
+      width: 170px; height: 240px; object-fit: cover; border-radius: 8px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .series-detail-info {
+      flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;
+    }
+    .series-meta-badges {
+      display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0;
+    }
+    .series-meta-badge {
+      background: rgba(229, 57, 53, 0.1); color: var(--primary-color); padding: 3px 8px; border-radius: 6px; font-size: 0.78em; font-weight: bold; border: 1px solid rgba(229, 57, 53, 0.2);
+    }
+
+    @media (max-width: 480px) {
+      .series-detail-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 14px;
+        gap: 12px;
+      }
+      .series-detail-poster {
+        width: 140px; height: 200px; margin: 0 auto;
+      }
+      .series-detail-info {
+        align-items: center;
+        text-align: center;
+      }
+      .series-meta-badges {
+        justify-content: center;
+      }
+      .grid-layout-2 { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .grid-layout-2 .anime-poster-wrapper { height: 160px; }
+      .grid-layout-1 .anime-poster-wrapper { width: 90px; height: 130px; }
+      .anime-title { font-size: 0.88em; }
+    }
+
+    .ep-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+    .ep-list-header h3 { margin: 0; font-size: 1.1em; font-weight: bold; }
+    .ep-sort-select { width: auto !important; margin: 0 !important; padding: 6px 10px !important; font-size: 0.85em !important; border-radius: 4px !important; background: var(--box-bg) !important; color: var(--text-color) !important; border: 1px solid var(--border-color) !important; }
+    .ep-items-container { display: flex; flex-direction: column; gap: 10px; }
+    .ep-item-card { display: flex; align-items: center; gap: 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; text-decoration: none; color: var(--text-color); transition: all 0.2s; }
+    .ep-item-card:hover { border-color: var(--primary-color); background: rgba(229, 57, 53, 0.03); transform: translateY(-1px); }
+    .ep-thumb-wrapper { width: 100px; height: 65px; border-radius: 6px; overflow: hidden; flex-shrink: 0; background: #222; }
+    .ep-thumb-img { width: 100%; height: 100%; object-fit: cover; }
+    .ep-item-details { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .ep-item-title { font-size: 0.92em; font-weight: bold; color: var(--text-color); line-height: 1.3; word-break: break-word; }
+    
+    .ep-navigation-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
+    .ep-nav-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 0.85em; font-weight: bold; transition: all 0.2s; }
+    .ep-nav-btn.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+    .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; border-radius: 6px; margin-bottom: 15px; }
+    .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+    .video-overlay-play {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      background-size: cover; background-position: center; cursor: pointer;
+      z-index: 10;
+      background-color: #000;
+    }
+    .video-overlay-play button#play {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      transition: transform 0.2s;
+    }
+    .video-overlay-play button#play:hover {
+      transform: scale(1.1);
+    }
+    .video-overlay-play button#play .dashicons {
+      font-size: 28px;
+    }
+
+    .anime-app-container table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; overflow-x: auto; display: block; }
+    .anime-app-container table, .anime-app-container th, .anime-app-container td { border: 1px solid var(--border-color); }
+    .anime-app-container th, .anime-app-container td { padding: 8px 10px; text-align: left; color: var(--text-color); background: var(--box-bg); }
+    .anime-app-container th { background-color: var(--border-color); }
+    
+    .anime-footer {
+      margin-top: 40px;
+      background: var(--box-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 30px 20px 20px;
+      color: var(--text-color);
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.03);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 25px;
+      margin-bottom: 25px;
+    }
+    .footer-col h4 {
+      color: var(--primary-color);
+      font-size: 1.05em;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+    .footer-col p, .footer-col ul {
+      font-size: 0.88em;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .footer-col ul li {
+      margin-bottom: 8px;
+    }
+    .footer-col ul li a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-col ul li a:hover {
+      color: var(--primary-color);
+      text-decoration: underline;
+    }
+    .footer-social-icons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .footer-social-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-color);
+      text-decoration: none;
+      font-size: 0.9em;
+      transition: all 0.2s;
+    }
+    .footer-social-icon:hover {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+    .footer-bottom {
+      text-align: center;
+      border-top: 1px solid var(--border-color);
+      padding-top: 15px;
+      font-size: 0.82em;
+      color: var(--text-muted);
+    }
+  </style>
+
+  <!-- Global Sticker Modal Panel -->
+  <div id="sticker-panel-box" class="sticker-modal-panel hidden" onclick="event.stopPropagation()">
+    <div class="sticker-modal-header">
+      <span>🖼️ Pilih Stiker / GIF / Koleksi</span>
+      <span onclick="toggleStickerPanel()" style="cursor:pointer; font-weight:bold; font-size:1.1em;">✕</span>
+    </div>
+    <div class="sticker-tabs">
+      <button class="sticker-tab-btn active" onclick="switchStickerTab('IMG')">Gambar</button>
+      <button class="sticker-tab-btn" onclick="switchStickerTab('GIF')">GIF</button>
+      <button class="sticker-tab-btn" onclick="switchStickerTab('PRIVATE')">⭐ Koleksi Pribadi</button>
+    </div>
+    <div style="margin-bottom: 10px; display:flex; gap:6px;">
+      <input type="text" id="custom-sticker-url" placeholder="Tambah URL Stiker/GIF Publik..." style="margin:0; padding:8px; font-size:0.85em;" />
+      <button onclick="saveNewCustomSticker()" style="padding:8px 12px; font-size:0.85em; margin:0; white-space:nowrap;">Simpan</button>
+    </div>
+    <div id="sticker-grid-content" class="sticker-grid"></div>
+  </div>
+
+  <!-- Header Navigasi -->
+  <div class="nav-bar">
+    <div><b><a href="?" style="text-decoration:none; color:white;">✨ Portal Anime</a></b></div>
+    <div class="nav-links-wrapper">
+      <a href="?">Beranda Publik</a>
+      <a href="?page=bookmarks">Bookmark</a>
+      <span id="nav-dashboard-link" class="hidden"><a href="?page=dashboard">Dashboard</a></span>
+      <span id="nav-auth-link"><a href="#" onclick="showLoginModal(); return false;">Login / Daftar</a></span>
+      <div id="nav-user-profile-display" class="hidden nav-user-info" onclick="showMyProfile()">
+        <span id="nav-avatar-frame" class="avatar-frame border-none">
+          <img id="nav-user-avatar" src="" class="user-avatar" loading="lazy" />
+        </span>
+        <span id="nav-username-text" style="font-size:0.85em; font-weight:bold; color:white;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customizer Tema & Warna Website -->
+  <div class="customizer-panel">
+    <div class="theme-options">
+      <label for="themeColorPicker" style="font-weight:bold;">Pilih Warna Tema:</label>
+      <input type="color" id="themeColorPicker" value="#e53935" style="width:40px; height:30px; border:none; cursor:pointer; background:none;" />
+    </div>
+    <div>
+      <button id="darkModeToggle" class="btn-secondary" style="padding: 5px 10px; font-size:0.85em; display: inline-flex; align-items: center; gap: 6px;">
+        <svg class="app-icon" viewbox="0 0 24 24" width="16" height="16"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></path></svg>
+        Dark Mode: OFF
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Login / Register -->
+  <div id="auth-box" class="box hidden" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 420px; z-index: 10003; box-shadow: 0 8px 30px rgba(0,0,0,0.35); border-radius: 10px; padding: 20px; animation: fadeInPopup 0.18s ease-out;">
+    <h3>Login / Daftar Akun</h3>
+    <input type="email" id="auth-email" placeholder="Email" />
+    <input type="password" id="auth-password" placeholder="Password (min. 6 karakter)" />
+    
+    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+      <button id="btn-login" style="flex:1;">Login</button>
+      <button id="btn-register" class="btn-secondary" style="flex:1;">Daftar Akun</button>
+    </div>
+
+    <!-- Tombol Login Google -->
+    <button id="btn-google-login" class="btn-secondary" style="width:100%; margin-bottom: 8px; background-color: #db4437 !important; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <svg viewbox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.9 5 12 5zm6.6 9.5c0-.6-.1-1.2-.2-1.7H12v3.3h3.7c-.2 1-8 1.8-2 2.4l3.1 2.4c1.8-1.7 3-4.2 3-7.4zM12 23c3.2 0 6-1.1 8-3l-3.1-2.4c-1.1.7-2.5 1.2-4.9 1.2-3.1 0-5.8-2.3-6.7-5.3L1.6 16c1.9 3.8 5.8 7 10.4 7z"/></path></svg>
+      Login dengan Google
+    </button>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.85em;">
+      <a href="#" id="btn-forgot-password" style="color: var(--primary-color); text-decoration: underline;">Lupa Password?</a>
+      <a href="#" onclick="hideLoginModal(); return false;" style="color: var(--text-muted);">Tutup</a>
+    </div>
+
+    <p id="auth-error" style="color:red; font-size: 0.9em;"></p>
+  </div>
+
+  <!-- Modal Lihat Profil Pengguna & Daftar Postingan -->
+  <div id="profile-modal-box" class="box hidden" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 440px; z-index: 10000; box-shadow: 0 5px 25px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto;">
+    <div id="profile-card-display" class="profile-card"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 8px;">
+      <div id="profile-logout-btn-wrapper"></div>
+      <div style="display:flex; gap:5px;">
+        <button id="btn-edit-profile-trigger" class="btn-edit hidden" onclick="showProfileEditForm()">Edit Profil</button>
+        <button class="btn-secondary" onclick="hideProfileModal()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edit Profil -->
+  <div id="profile-edit-box" class="box hidden" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; z-index: 10001; box-shadow: 0 5px 25px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto;">
+    <h3>Pengaturan Profil Saya</h3>
+    <label style="font-size:0.85em; font-weight:bold;">Username Kustom:</label>
+    <input type="text" id="edit-username" placeholder="Masukkan Username" />
+    
+    <label style="font-size:0.85em; font-weight:bold;">URL Foto Profil / Upload File (Gambar/GIF):</label>
+    <div style="display:flex; gap:6px; align-items:center;">
+      <input type="text" id="edit-avatar-url" placeholder="https://example.com/avatar.jpg" style="margin:0; flex:1;" />
+      <input type="file" id="edit-avatar-file" accept="image/*" class="hidden" onchange="handleProfileFileUpload(event, 'avatar')" />
+      <button type="button" class="btn-secondary" onclick="document.getElementById('edit-avatar-file').click()" style="margin:0; font-size:0.8em; white-space:nowrap;">Upload File</button>
+    </div>
+    
+    <label style="font-size:0.85em; font-weight:bold; margin-top:10px; display:block;">URL Banner Header / Upload File (GIF / Gambar / MP4 Video - Maks 5MB):</label>
+    <div style="display:flex; gap:6px; align-items:center;">
+      <input type="text" id="edit-banner-url" placeholder="https://example.com/banner.mp4 or banner.gif" style="margin:0; flex:1;" />
+      <input type="file" id="edit-banner-file" accept="image/*,video/mp4" class="hidden" onchange="handleProfileFileUpload(event, 'banner')" />
+      <button type="button" class="btn-secondary" onclick="document.getElementById('edit-banner-file').click()" style="margin:0; font-size:0.8em; white-space:nowrap;">Upload File Besar</button>
+    </div>
+    
+    <label style="font-size:0.85em; font-weight:bold; margin-top:10px; display:block;">Pilih Border Foto Profil:</label>
+    <select id="edit-border-style">
+      <option value="border-none" />Tanpa Border
+      <option value="border-gold" />✨ Gold Glow
+      <option value="border-neon" />⚡ Neon Blue
+      <option value="border-cyber" />🔥 Cyberpunk Red
+      <option value="border-rainbow" />🌈 Rainbow
+    </select>
+
+    <label style="font-size:0.85em; font-weight:bold;">Bio / Deskripsi Singkat:</label>
+    <textarea id="edit-bio" rows="3" placeholder="Tulis bio Anda..."></textarea>
+    
+    <button id="btn-save-profile">Simpan Profil</button>
+    <button class="btn-secondary" onclick="hideProfileEditForm()">Batal</button>
+  </div>
+
+  <div id="main-view-container">
+
+    <!-- HALAMAN BOOKMARK (?page=bookmarks) -->
+    <div id="bookmarks-view" class="box hidden">
+      <h2>⭐ Daftar Bookmark Anime Saya</h2>
+      <p style="color:var(--text-muted); font-size:0.9em;">Anime yang Anda simpan tersimpan di perangkat ini. Anda juga dapat melakukan export atau import file cadangan bookmark.</p>
+      
+      <div style="display: flex; gap: 8px; margin: 15px 0; flex-wrap: wrap;">
+        <button class="btn-secondary" onclick="exportBookmarks()">📥 Export Bookmark (JSON)</button>
+        <button class="btn-secondary" onclick="document.getElementById('import-bookmark-file').click()">📤 Import Bookmark (JSON)</button>
+        <input type="file" id="import-bookmark-file" accept=".json" class="hidden" onchange="importBookmarks(event)" />
+      </div>
+
+      <hr style="margin: 15px 0;" />
+      <div id="bookmarks-container" class="grid-layout-1">
+        <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-lines"><div class="skeleton skeleton-line medium"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line"></div></div></div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD UPLOAD (?page=dashboard) -->
+    <div id="dashboard-view" class="box hidden">
+      <!-- Peringatan jika email belum diverifikasi -->
+      <div id="email-verification-banner" class="hidden" style="background: rgba(255, 152, 0, 0.15); border: 1px solid #ff9800; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9em;">
+        ⚠️ Email Anda belum diverifikasi. Silakan periksa kotak masuk atau folder spam Anda untuk melakukan aktivasi akun. 
+        <button class="btn-secondary" onclick="resendVerificationEmail()" style="margin-left: 10px; padding: 4px 8px; font-size: 0.8em;">Kirim Ulang Email Verifikasi</button>
+      </div>
+
+      <h2 id="dashboard-main-title">Dashboard Pengelola (Uploader)</h2>
+      <p>Halo, <b id="user-email"></b> | <a href="#" id="btn-logout" style="color:#d32f2f; font-weight:bold;">Sign Out</a></p>
+      <hr style="margin: 15px 0;" />
+
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('tab-upload', this)">Upload & Form</button>
+        <button class="tab-btn" onclick="switchTab('tab-database', this)" id="db-tab-btn-label">Database Postingan Saya</button>
+      </div>
+
+      <div id="tab-upload" class="tab-content">
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+          <button class="btn-secondary" onclick="switchSubForm('form-series')">Form Series</button>
+          <button class="btn-secondary" onclick="switchSubForm('form-episode')">Form Episode</button>
+        </div>
+
+        <div id="form-series" class="sub-form">
+          <h3 id="series-form-title">Tambah Anime Series Baru</h3>
+          <input type="hidden" id="edit-series-id" value="" />
+          <input type="text" id="series-title" placeholder="Judul Anime" />
+          <input type="text" id="series-genre" placeholder="Genre (pisahkan koma, contoh: Action, Fantasy)" />
+          
+          <label style="font-size:0.9em; font-weight:bold;">Rating (Input Angka, contoh: 8.5):</label>
+          <input type="number" id="series-rating" step="0.1" min="0" max="10" placeholder="Rating" />
+
+          <select id="series-status">
+            <option value="Ongoing" />Ongoing
+            <option value="Completed" />Completed
+          </select>
+          <select id="series-type">
+            <option value="TV" />TV / Series
+            <option value="Movie" />Movie
+            <option value="OVA" />OVA
+            <option value="ONA" />ONA
+            <option value="Special" />Special
+          </select>
+          <select id="series-season">
+            <option value="Winter 2026" />Winter 2026
+            <option value="Spring 2026" />Spring 2026
+            <option value="Summer 2026" />Summer 2026
+            <option value="Fall 2026" />Fall 2026
+          </select>
+          <select id="series-studio">
+            <option value="MAPPA" />MAPPA
+            <option value="Ufotable" />Ufotable
+            <option value="Madhouse" />Madhouse
+            <option value="Wit Studio" />Wit Studio
+            <option value="CloverWorks" />CloverWorks
+            <option value="Kyoto Animation" />Kyoto Animation
+            <option value="A-1 Pictures" />A-1 Pictures
+            <option value="Bones" />Bones
+          </select>
+          <input type="text" id="series-poster" placeholder="URL Poster Gambar" />
+          <textarea id="series-desc" rows="3" placeholder="Sinopsis..."></textarea>
+          <button id="btn-save-series">Simpan Series</button>
+          <button id="btn-cancel-series" class="btn-secondary hidden" onclick="resetSeriesForm()">Batal</button>
+        </div>
+
+        <div id="form-episode" class="sub-form hidden">
+          <h3 id="ep-form-title">Tambah Episode Baru</h3>
+          <input type="hidden" id="edit-ep-id" value="" />
+          <label>Pilih Anime Series:</label>
+          <select id="select-anime-series"><option value="" />-- Pilih --</select>
+          <input type="number" id="ep-number" placeholder="Nomor Episode" />
+          <input type="text" id="ep-title" placeholder="Judul Episode (Opsional)" />
+          <input type="text" id="ep-thumbnail" placeholder="URL Gambar / Thumbnail Episode" />
+          
+          <label style="font-size:0.9em; font-weight:bold; margin-top:10px; display:block;">Daftar Server Video (Utama & Backup Dinamis):</label>
+          <div id="server-inputs-container" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px;"></div>
+          <button type="button" class="btn-secondary" onclick="addServerInputRow()" style="margin-bottom:15px; font-size:0.85em; padding:6px 12px;">+ Tambah Server / Backup</button>
+
+          <button id="btn-save-episode">Simpan Episode</button>
+          <button id="btn-cancel-ep" class="btn-secondary hidden" onclick="resetEpForm()">Batal</button>
+        </div>
+      </div>
+
+      <div id="tab-database" class="tab-content hidden">
+        <h3 id="db-series-heading">Database Series Anda</h3>
+        <div id="my-series-table-container">Memuat data...</div>
+        <h3 id="db-eps-heading" style="margin-top: 25px;">Database Episode Anda</h3>
+        <div id="my-ep-table-container">Memuat data...</div>
+      </div>
+    </div>
+
+    <!-- KATALOG PUBLIK -->
+    <div id="catalog-view" class="box hidden">
+      <h3>Daftar Anime Publik</h3>
+      
+      <div class="search-wrapper">
+        <input type="text" id="anime-search-input" placeholder="🔍 Cari judul atau genre anime..." oninput="handleLiveSearch(this.value)" autocomplete="off" style="margin-bottom: 0;" />
+        <div id="search-suggestions-box" class="search-suggestions-box hidden"></div>
+      </div>
+
+      <div class="anime-filter-wrapper">
+        <div class="filter-grid">
+          <div class="filter-box-item" id="item-genre">
+            <div class="custom-select" id="f-genre">
+              <div class="select-trigger" id="genre-trigger">Semua Genre</div>
+              <div class="select-options">
+                <div class="genre-options-grid">
+                  <label class="genre-checkbox-item"><input type="checkbox" value="Action" /> Action</label>
+                  <label class="genre-checkbox-item"><input type="checkbox" value="Comedy" /> Comedy</label>
+                  <label class="genre-checkbox-item"><input type="checkbox" value="Fantasy" /> Fantasy</label>
+                  <label class="genre-checkbox-item"><input type="checkbox" value="Romance" /> Romance</label>
+                  <label class="genre-checkbox-item"><input type="checkbox" value="Sci-Fi" /> Sci-Fi</label>
+                  <label class="genre-checkbox-item"><input type="checkbox" value="Slice of Life" /> Slice of Life</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-box-item" id="item-status">
+            <div class="custom-select" id="f-status" data-value="">
+              <div class="select-trigger">Semua Status</div>
+              <div class="select-options">
+                <div class="option-item selected" data-value="">Semua Status</div>
+                <div class="option-item" data-value="Ongoing">Ongoing</div>
+                <div class="option-item" data-value="Completed">Completed</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-box-item" id="item-type">
+            <div class="custom-select" id="f-type" data-value="">
+              <div class="select-trigger">Semua Tipe</div>
+              <div class="select-options">
+                <div class="option-item selected" data-value="">Semua Tipe</div>
+                <div class="option-item" data-value="TV">TV / Series</div>
+                <div class="option-item" data-value="Movie">Movie</div>
+                <div class="option-item" data-value="OVA">OVA</div>
+                <div class="option-item" data-value="ONA">ONA</div>
+                <div class="option-item" data-value="Special">Special</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-box-item" id="item-season">
+            <div class="custom-select" id="f-season" data-value="">
+              <div class="select-trigger">Semua Season</div>
+              <div class="select-options">
+                <div class="option-item selected" data-value="">Semua Season</div>
+                <div class="option-item" data-value="Winter 2026">Winter 2026</div>
+                <div class="option-item" data-value="Spring 2026">Spring 2026</div>
+                <div class="option-item" data-value="Summer 2026">Summer 2026</div>
+                <div class="option-item" data-value="Fall 2026">Fall 2026</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-box-item" id="item-order">
+            <div class="custom-select" id="f-order" data-value="updated">
+              <div class="select-trigger">Terupdate</div>
+              <div class="select-options">
+                <div class="option-item selected" data-value="updated">Terupdate</div>
+                <div class="option-item" data-value="latest_added">Baru Ditambah</div>
+                <div class="option-item" data-value="release_old">Rilis Terlawas</div>
+                <div class="option-item" data-value="popular">Terpopuler</div>
+                <div class="option-item" data-value="rating">Rating Tertinggi</div>
+                <div class="option-item" data-value="az">A - Z</div>
+                <div class="option-item" data-value="za">Z - A</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-box-item" id="item-studio">
+            <div class="custom-select" id="f-studio" data-value="">
+              <div class="select-trigger">Semua Studio</div>
+              <div class="select-options">
+                <div class="option-item selected" data-value="">Semua Studio</div>
+                <div class="option-item" data-value="MAPPA">MAPPA</div>
+                <div class="option-item" data-value="Ufotable">Ufotable</div>
+                <div class="option-item" data-value="Madhouse">Madhouse</div>
+                <div class="option-item" data-value="Wit Studio">Wit Studio</div>
+                <div class="option-item" data-value="CloverWorks">CloverWorks</div>
+                <div class="option-item" data-value="Kyoto Animation">Kyoto Animation</div>
+                <div class="option-item" data-value="A-1 Pictures">A-1 Pictures</div>
+                <div class="option-item" data-value="Bones">Bones</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-switcher-container">
+          <span style="font-size:0.88em; font-weight:bold; color:var(--text-muted);">Tampilan Layout:</span>
+          <div class="grid-switcher-buttons">
+            <button class="grid-icon-btn active" title="Grid List" onclick="setGridLayout(1)">
+              <svg class="app-icon" viewbox="0 0 24 24" width="20" height="20"><path d="M4 10.5h16c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5H4c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5zm0 6h16c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5H4c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5zm0-12h16c.83 0 1.5-.67 1.5-1.5S20.83 1.5 20 1.5H4c-.83 0-1.5.67-1.5 1.5S3.17 4.5 4 4.5z"/></path></svg>
+            </button>
+            <button class="grid-icon-btn" title="Grid Poster Grid" onclick="setGridLayout(2)">
+              <svg class="app-icon" viewbox="0 0 24 24" width="20" height="20"><path d="M4 11h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zm10 0h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zM4 21h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zm10 0h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1 z"/></path></svg>
+            </button>
+            <button class="grid-icon-btn" title="Grid Kompak Compact" onclick="setGridLayout(3)">
+              <svg class="app-icon" viewbox="0 0 24 24" width="20" height="20"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2zm16 14H5V5h14v14zM7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z"/></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="hasil-pencarian" class="grid-layout-1">
+          <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-lines"><div class="skeleton skeleton-line medium"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line"></div></div></div>
+          <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-lines"><div class="skeleton skeleton-line medium"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line"></div></div></div>
+        </div>
+      </div>
+
+      <!-- Kotak Pesan Global Komunitas -->
+      <div class="telegram-chat-container">
+        <div class="telegram-chat-header">
+          <svg class="app-icon" viewbox="0 0 24 24" width="18" height="18"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></path></svg>
+          Pesan Global Komunitas
+        </div>
+
+        <div id="chat-reply-preview" class="hidden reply-preview-box">
+          <span id="reply-preview-text">Membalas pesan...</span>
+          <span onclick="cancelReplyOrEdit()" style="cursor:pointer; font-weight:bold; margin-left:8px;">✕</span>
+        </div>
+
+        <div style="padding: 0 15px;">
+          <button id="btn-load-chat-more" class="btn-load-more hidden" onclick="loadMoreChatMessages()">💬 Muat Pesan Sebelumnya...</button>
+        </div>
+
+        <div id="chat-messages-container" class="chat-messages-box">
+          <div style="display:flex; gap:10px; align-items:flex-start;"><div class="skeleton" style="width:32px; height:32px; border-radius:50%; flex-shrink:0;"></div><div class="skeleton" style="height:50px; width:65%; border-radius:8px;"></div></div>
+        </div>
+        
+        <!-- Preview Container Gambar Chat -->
+        <div id="chat-image-previews" class="hidden" style="padding: 0 10px;"></div>
+
+        <div class="telegram-input-bar" style="display:flex; gap:8px; padding:10px; background:var(--box-bg); border-top:1px solid var(--border-color); align-items:center;">
+          <button id="btn-toggle-sticker" class="btn-secondary" onclick="toggleStickerPanel(event, 'chat-text')" title="Stiker & GIF" style="margin:0; height:40px; padding:0 12px; display:inline-flex; align-items:center; justify-content:center;">
+            <svg class="app-icon" viewbox="0 0 24 24" width="20" height="20"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></path></svg>
+          </button>
+          <input type="file" id="chat-file-input" accept="image/*" multiple class="hidden" onchange="handleMultipleImageUpload(event, 'chat')" />
+          <button class="btn-secondary" onclick="document.getElementById('chat-file-input').click()" title="Lampirkan Gambar (Bisa Banyak)" style="margin:0; height:40px; padding:0 12px; display:inline-flex; align-items:center; justify-content:center;">
+            <svg class="app-icon" viewbox="0 0 24 24" width="18" height="18"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></path></svg>
+          </button>
+          <textarea id="chat-text" rows="1" placeholder="Tulis pesan publik..." style="margin:0 !important; resize:none; height:40px; padding:8px; font-size:0.9em; flex:1;" onfocus="activeInputId='chat-text'"></textarea>
+          <button id="btn-send-chat" style="height:40px; white-space:nowrap; margin:0 !important;">Kirim</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL SERIES PUBLIK (?series=ID) -->
+    <div id="series-detail-view" class="box hidden">
+      <a href="?" style="text-decoration:none; color:var(--primary-color);">&laquo; Kembali ke Beranda</a>
+      <div id="series-detail-content" style="margin-top: 15px;">
+        <div class="series-detail-card" style="margin-top:10px;">
+          <div class="skeleton skeleton-poster" style="width:170px; height:240px;"></div>
+          <div class="skeleton-lines" style="justify-content: center;">
+            <div class="skeleton skeleton-line medium" style="height:24px;"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line" style="height:60px;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="reaction-container">
+        <h4>Beri reaksi untuk series ini:</h4>
+        <div id="reactionGroup-series" class="reaction-group"></div>
+      </div>
+
+      <div class="comment-box" style="margin-top:25px;">
+        <h4>Komentar Series</h4>
+        <div id="comment-reply-preview" class="hidden reply-preview-box">
+          <span id="comment-reply-preview-text">Membalas komentar...</span>
+          <span onclick="cancelCommentReply()" style="cursor:pointer; font-weight:bold; margin-left:8px;">✕</span>
+        </div>
+        <div id="comments-list-container" style="max-height: 450px; overflow-y: auto; margin-bottom: 12px;">
+          <div class="skeleton" style="height:60px; width:100%; border-radius:8px; margin-bottom:10px;"></div>
+        </div>
+        <div id="comment-form-wrapper" style="margin-top: 15px;"></div>
+      </div>
+    </div>
+
+    <!-- PLAYER PEMUTAR VIDEO PUBLIK (?series=ID&ep=ID) -->
+    <div id="player-view" class="box hidden">
+      <div id="back-to-series-link" style="margin-bottom:15px;"></div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+        <div>
+          <h2 id="view-ep-title" style="margin:0;">Judul Episode</h2>
+          <div id="view-ep-uploader-info" style="margin-top:4px;"></div>
+          <p id="view-series-title" style="color:var(--text-muted); font-size:0.9em; margin:2px 0 0 0;"></p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label style="font-size:0.85em; font-weight:bold; margin:0;">Pilih Server:</label>
+          <select id="server-selector" style="margin:0; padding:6px; font-size:0.85em; width:auto;" onchange="switchVideoServer(this.value)">
+            <option value="0" />Server Utama (HD)
+          </select>
+        </div>
+      </div>
+
+      <div class="video-container" id="player-wrapper"></div>
+      
+      <div class="ep-navigation-bar">
+        <a href="#" id="btn-prev-ep" class="ep-nav-btn disabled">&laquo; Episode Sebelumnya</a>
+        <a href="#" id="btn-all-eps" class="ep-nav-btn">Daftar Episode</a>
+        <a href="#" id="btn-next-ep" class="ep-nav-btn disabled">Episode Selanjutnya &raquo;</a>
+      </div>
+
+      <div id="view-ep-desc" style="margin-top: 15px;"></div>
+
+      <div class="reaction-container">
+        <h4>Beri reaksi untuk episode ini:</h4>
+        <div id="reactionGroup-episode" class="reaction-group"></div>
+      </div>
+
+      <div class="comment-box" style="margin-top:25px;">
+        <h4>Komentar Episode Ini</h4>
+        <div id="ep-comment-reply-preview" class="hidden reply-preview-box">
+          <span id="ep-comment-reply-preview-text">Membalas komentar...</span>
+          <span onclick="cancelEpCommentReply()" style="cursor:pointer; font-weight:bold; margin-left:8px;">✕</span>
+        </div>
+        <div id="ep-comments-list-container" style="max-height: 450px; overflow-y: auto; margin-bottom: 12px;">
+          <div class="skeleton" style="height:60px; width:100%; border-radius:8px;"></div>
+        </div>
+        <div id="ep-comment-form-wrapper" style="margin-top: 15px;"></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="anime-footer">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>✨ Portal Anime</h4>
+          <p>Platform streaming dan komunitas wibu interaktif terbaik untuk menikmati anime series, OVA, dan movie favorit Anda secara real-time.</p>
+          <div class="footer-social-icons">
+            <a href="#" class="footer-social-icon" title="Telegram">📢</a>
+            <a href="#" class="footer-social-icon" title="Discord">💬</a>
+            <a href="#" class="footer-social-icon" title="GitHub">🐙</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Navigasi Cepat</h4>
+          <ul>
+            <li><a href="?">Beranda Publik</a></li>
+            <li><a href="?page=bookmarks">Daftar Bookmark</a></li>
+            <li><a href="#" onclick="showLoginModal(); return false;">Login / Register</a></li>
+            <li><a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Kembali ke Atas ↑</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Informasi</h4>
+          <p>Seluruh video dan gambar yang dibagikan bersumber dari web pihak ketiga. Portal ini dibuat sebagai wadah komunitas penggemar anime.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Portal Anime. All rights reserved. Dibuat dengan penuh ❤️ untuk Komunitas Anime.</p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- SCRIPT REGULER: UI INTERAKTIF GLOBAL -->
+<script>
+  window.switchSubForm = function(formId) {
+    document.querySelectorAll('.sub-form').forEach(el => el.classList.add('hidden'));
+    document.getElementById(formId)?.classList.remove('hidden');
+    if(formId === 'form-episode' && typeof initDefaultServerRow === 'function') {
+      initDefaultServerRow();
+    }
+  };
+
+  window.addServerInputRow = function(name = '', url = '') {
+    const container = document.getElementById('server-inputs-container');
+    if(!container) return;
+    const rowId = 'server-row-' + Date.now() + Math.random().toString(36).substr(2, 5);
+    const div = document.createElement('div');
+    div.className = 'server-input-row';
+    div.id = rowId;
+    div.style.cssText = "display:flex; gap:6px; align-items:center;";
+    div.innerHTML = `
+      <input type="text" placeholder="Nama Server (cth: Utama, Backup 1)" class="srv-name" value="${name}" style="margin:0; flex:1;" />
+      <input type="text" placeholder="URL Embed / Link Video" class="srv-url" value="${url}" style="margin:0; flex:2;" />
+      <button type="button" class="btn-danger" onclick="document.getElementById('${rowId}').remove()" style="margin:0; padding:10px 12px;" title="Hapus Server">✕</button>
+    `;
+    container.appendChild(div);
+  };
+  window.AddServerInputRow = window.addServerInputRow;
+
+  window.switchTab = function(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId)?.classList.remove('hidden');
+    btn?.classList.add('active');
+    if(tabId === 'tab-database' && typeof loadMyDatabaseTables === 'function') loadMyDatabaseTables();
+    if(tabId === 'tab-upload' && typeof initDefaultServerRow === 'function') initDefaultServerRow();
+  };
+
+  window.showLoginModal = function() { document.getElementById('auth-box')?.classList.remove('hidden'); };
+  window.hideLoginModal = function() { document.getElementById('auth-box')?.classList.add('hidden'); };
+  window.showMyProfile = function() { if(typeof viewUserProfile === 'function' && window.currentUser) viewUserProfile(window.currentUser.uid); };
+  window.hideProfileModal = function() { document.getElementById('profile-modal-box')?.classList.add('hidden'); };
+  window.hideProfileEditForm = function() { document.getElementById('profile-edit-box')?.classList.add('hidden'); };
+
+  window.toggleStickerPanel = function(event, targetId = 'chat-text') {
+    event?.stopPropagation();
+    if (!window.currentUser) {
+      alert("Harap Login terlebih dahulu untuk menggunakan fitur Stiker dan GIF!");
+      showLoginModal();
+      return;
+    }
+    if (targetId) window.activeInputId = targetId;
+    const panel = document.getElementById('sticker-panel-box');
+    if(panel) {
+      panel.classList.toggle('hidden');
+      if(!panel.classList.contains('hidden') && typeof renderStickerGrid === 'function') {
+        renderStickerGrid();
+      }
+    }
+  };
+</script>
+
+<!-- SCRIPT MODULE: FIREBASE & LOGIKA APLIKASI -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  import { 
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+    GoogleAuthProvider, signInWithPopup, sendEmailVerification, sendPasswordResetEmail 
+  } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
+  import { 
+    getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, getDocs, query, where, orderBy, limit, onSnapshot, serverTimestamp, increment, arrayUnion, arrayRemove, Timestamp 
+  } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+  import { getDatabase, ref, onValue, runTransaction, set, remove, off } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBR5EoqTcKx4e4mcDwUlPpxIk51hRHaSPE",
+    authDomain: "anime-91f60.firebaseapp.com",
+    databaseURL: "https://anime-91f60-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "anime-91f60",
+    storageBucket: "anime-91f60.firebasestorage.app",
+    messagingSenderId: "807319143431",
+    appId: "1:807319143431:web:2904148eaa5f4c65fdd6a2",
+    measurementId: "G-MXN4K7QTG2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const rtdb = getDatabase(app);
+
+  const adminUIDs = ["JhvCgt2IZRSNRV21xNimAgeZ7NL2"];
+  function isAdmin() {
+    return currentUser && adminUIDs.includes(currentUser.uid);
+  }
+
+  function createSlug(text) {
+    return text.toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  let usersCache = JSON.parse(localStorage.getItem('cache_users_data') || '{}');
+  onSnapshot(collection(db, "users"), (snapshot) => {
+    usersCache = {};
+    snapshot.forEach(docSnap => {
+      usersCache[docSnap.id] = docSnap.data();
+    });
+    localStorage.setItem('cache_users_data', JSON.stringify(usersCache));
+  }, (error) => { console.error("Error loading users cache:", error); });
+
+  function getUserInfo(uid, fallbackName, fallbackAvatar, fallbackBorder) {
+    const u = usersCache[uid];
+    if (u) {
+      return {
+        username: u.username || fallbackName || 'Pengguna',
+        avatarUrl: cleanImageUrl(u.avatarUrl) || cleanImageUrl(fallbackAvatar) || 'https://via.placeholder.com/32?text=U',
+        borderStyle: u.borderStyle || fallbackBorder || 'border-none'
+      };
+    }
+    return {
+      username: fallbackName || 'Pengguna',
+      avatarUrl: cleanImageUrl(fallbackAvatar) || 'https://via.placeholder.com/32?text=U',
+      borderStyle: fallbackBorder || 'border-none'
+    };
+  }
+
+  // --- REAKSI DINAMIS ---
+  let activePostId = "home_global";
+  let targetContainerId = "";
+  let reactionRef = null;
+  let STORAGE_KEY_USER = "";
+
+  const reactions = [
+      { id: 'marah', emoji: '😡', label: 'Marah' },
+      { id: 'senang', emoji: '😊', label: 'Senang' },
+      { id: 'sedih', emoji: '😢', label: 'Sedih' },
+      { id: 'suka', emoji: '❤️', label: 'Suka' },
+      { id: 'lucu', emoji: '😂', label: 'Lucu' }
+  ];
+
+  let currentCounts = {};
+  let reactionUnsubscribe = null;
+
+  function updateActivePostContext() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const seriesParam = urlParams.get('series');
+    const epParam = urlParams.get('ep');
+
+    if (seriesParam && epParam) {
+        activePostId = `ep_${seriesParam}_${epParam}`;
+        targetContainerId = 'reactionGroup-episode';
+    } else if (seriesParam) {
+        activePostId = `series_${seriesParam}`;
+        targetContainerId = 'reactionGroup-series';
+    } else {
+        activePostId = "home_global";
+        targetContainerId = "";
+    }
+    reactionRef = ref(rtdb, `reactions/${activePostId}`);
+    STORAGE_KEY_USER = `user_selected_reaction_${activePostId}`;
+  }
+
+  function renderReactions(counts) {
+      if (!targetContainerId) return;
+      const container = document.getElementById(targetContainerId);
+      if (!container) return;
+      const userSelected = localStorage.getItem(STORAGE_KEY_USER);
+
+      container.innerHTML = '';
+      reactions.forEach(r => {
+          const isSelected = userSelected === r.id;
+          const count = (counts && counts[r.id]) || 0;
+
+          const btn = document.createElement('button');
+          btn.className = `reaction-btn ${isSelected ? 'active' : ''}`;
+          btn.innerHTML = `
+              <span class="emoji">${r.emoji}</span>
+              <span class="count">${count}</span>
+          `;
+          btn.addEventListener('click', () => handleReaction(r.id));
+          container.appendChild(btn);
+      });
+  }
+
+  function initDynamicReactions() {
+      updateActivePostContext();
+      if (!targetContainerId) return;
+      if (reactionUnsubscribe) off(reactionRef);
+      reactionUnsubscribe = onValue(reactionRef, (snapshot) => {
+          currentCounts = snapshot.val() || {};
+          renderReactions(currentCounts);
+      });
+  }
+
+  function handleReaction(reactionId) {
+      let userSelected = localStorage.getItem(STORAGE_KEY_USER);
+      runTransaction(reactionRef, (currentData) => {
+          if (!currentData) {
+              currentData = {};
+              reactions.forEach(r => currentData[r.id] = 0);
+          }
+          if (userSelected === reactionId) {
+              currentData[reactionId] = Math.max(0, (currentData[reactionId] || 0) - 1);
+              localStorage.removeItem(STORAGE_KEY_USER);
+          } else {
+              if (userSelected && currentData[userSelected] > 0) {
+                  currentData[userSelected] -= 1;
+              }
+              currentData[reactionId] = (currentData[reactionId] || 0) + 1;
+              localStorage.setItem(STORAGE_KEY_USER, reactionId);
+          }
+          return currentData;
+      }).then(() => renderReactions(currentCounts)).catch((err) => console.error("Reaction transaction error:", err));
+  }
+
+  window.toggleBookmark = function(seriesId, event) {
+    event?.stopPropagation();
+    let bookmarks = JSON.parse(localStorage.getItem('anime_bookmarks') || '[]');
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+    const seriesParam = urlParams.get('series');
+
+    if (bookmarks.includes(seriesId)) {
+      bookmarks = bookmarks.filter(id => id !== seriesId);
+      alert("Bookmark dihapus!");
+    } else {
+      bookmarks.push(seriesId);
+      alert("Berhasil ditambahkan ke Bookmark!");
+    }
+    localStorage.setItem('anime_bookmarks', JSON.stringify(bookmarks));
+    
+    if (seriesParam === seriesId) loadSeriesDetail(seriesId);
+    else if (!pageParam && !seriesParam) applyFilters();
+    else if (pageParam === 'bookmarks') loadBookmarksView();
+  }
+
+  window.isBookmarked = function(seriesId) {
+    let bookmarks = JSON.parse(localStorage.getItem('anime_bookmarks') || '[]');
+    return bookmarks.includes(seriesId);
+  }
+
+  window.exportBookmarks = function() {
+    const bookmarks = localStorage.getItem('anime_bookmarks') || '[]';
+    const blob = new Blob([bookmarks], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'anime_bookmarks.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  window.importBookmarks = function(event) {
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if(Array.isArray(imported)) {
+          let current = JSON.parse(localStorage.getItem('anime_bookmarks') || '[]');
+          let merged = Array.from(new Set([...current, ...imported]));
+          localStorage.setItem('anime_bookmarks', JSON.stringify(merged));
+          alert("Bookmark berhasil di-import!");
+          const pageParam = new URLSearchParams(window.location.search).get('page');
+          if(pageParam === 'bookmarks') loadBookmarksView();
+          else applyFilters();
+        } else {
+          alert("Format file JSON bookmark tidak valid.");
+        }
+      } catch(err) {
+        alert("Gagal membaca file: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  let currentUser = null;
+  window.currentUser = null;
+  let currentUserProfile = null;
+  let allAnimeData = [];
+  let currentGridType = 1;
+  let currentEpisodeData = null;
+  let currentSeriesEpisodesList = []; 
+  
+  let replyingTo = null;
+  let editingMsgId = null;
+  let replyingToComment = null;
+  let editingCommentId = null;
+  let replyingToEpComment = null;
+  let editingEpCommentId = null;
+  let isFirstChatLoad = true;
+
+  let chatLimitCount = 15;
+  let chatUnsubscribe = null;
+
+  let seriesCommentsUnsubscribe = null;
+  let epCommentsUnsubscribe = null;
+
+  window.activeInputId = 'chat-text';
+
+  let chatStagedImages = [];
+  let commentStagedImages = [];
+  let epCommentStagedImages = [];
+
+  let defaultStickersIMG = [];
+  let defaultStickersGIF = [];
+  
+  let publicCustomStickers = JSON.parse(localStorage.getItem('cache_public_stickers') || '[]');
+  let activeStickerTab = 'IMG';
+
+  onSnapshot(collection(db, "public_stickers"), (snapshot) => {
+    publicCustomStickers = [];
+    snapshot.forEach(docSnap => {
+      publicCustomStickers.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    localStorage.setItem('cache_public_stickers', JSON.stringify(publicCustomStickers));
+    renderStickerGrid();
+  }, (error) => { console.error("Error loading public stickers:", error); });
+
+  function cleanImageUrl(url) {
+    if (!url) return '';
+    let cleaned = url.trim();
+    if (cleaned.startsWith('data:text') || (cleaned.length > 2000 && !cleaned.startsWith('data:image/') && !cleaned.startsWith('data:video/'))) {
+      return '';
+    }
+    return cleaned;
+  }
+
+  function formatDate(timestamp) {
+    if (!timestamp) return "Baru saja";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function renderUploaderBadge(uid, name, avatar, border, time) {
+    const info = getUserInfo(uid, name, avatar, border);
+    const timeStr = formatDate(time);
+    return `
+      <div style="display:flex; align-items:center; gap:6px; font-size:0.78em; color:var(--text-muted); margin-top:2px; flex-wrap:wrap;">
+        <span class="avatar-frame ${info.borderStyle}" style="width:18px; height:18px;">
+          <img src="${info.avatarUrl}" class="user-avatar" style="width:14px; height:14px;" loading="lazy" onerror="this.src='https://via.placeholder.com/14?text=U'">
+        </span>
+        <span style="white-space:nowrap;"><b>${info.username}</b> • ${timeStr}</span>
+      </div>
+    `;
+  }
+
+  function parseContentWithMedia(text, imagesArray = []) {
+    let html = '';
+    if (text) {
+      if (text.startsWith('data:image/')) {
+        html += `<img src="${text}" class="media-display-box" loading="lazy" />`;
+      } else {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        html += text.replace(urlRegex, (url) => {
+          const lower = url.toLowerCase();
+          if (lower.match(/\.(jpeg|jpg|gif|png|webp)(\?[^\s]*)?$/i) || lower.includes('giphy.com') || lower.includes('tenor.com')) {
+            return `<br><img src="${url}" class="media-display-box" loading="lazy" onerror="this.style.display='none'"><button class="btn-save-sticker" onclick="saveCustomStickerToPrivate('${url}')">⭐ Simpan ke Koleksi Pribadi</button>`;
+          } else if (lower.match(/\.(mp4|webm|ogg)(\?[^\s]*)?$/i)) {
+            return `<br><video src="${url}" controls class="media-display-box"></video>`;
+          } else {
+            return `<a href="${url}" target="_blank" style="color:var(--primary-color); word-break:break-all;">${url}</a>`;
+          }
+        });
+      }
+    }
+    if (imagesArray && imagesArray.length > 0) {
+      imagesArray.forEach(img => {
+        html += `<br><img src="${img}" class="media-display-box" loading="lazy" />`;
+      });
+    }
+    return html;
+  }
+
+  window.switchStickerTab = function(tab) {
+    activeStickerTab = tab;
+    document.querySelectorAll('.sticker-tab-btn').forEach(b => b.classList.remove('active'));
+    if (event?.target) event.target.classList.add('active');
+    renderStickerGrid();
+  }
+
+  window.renderStickerGrid = function() {
+    const grid = document.getElementById('sticker-grid-content');
+    if (!grid) return;
+    
+    let items = [];
+
+    if (activeStickerTab === 'PRIVATE') {
+      let privUrls = currentUserProfile?.savedStickers || [];
+      items = privUrls.map(url => ({ id: null, url: url, isPrivate: true }));
+    } else {
+      let filteredPublic = publicCustomStickers.filter(item => item.type === activeStickerTab);
+      if (activeStickerTab === 'IMG') {
+        let defaults = defaultStickersIMG.map(u => ({ id: null, url: u, isDefault: true }));
+        let customs = filteredPublic.map(item => ({ id: item.id, url: item.url, uid: item.uid, isPublicCustom: true }));
+        items = [...defaults, ...customs];
+      } else if (activeStickerTab === 'GIF') {
+        let defaults = defaultStickersGIF.map(u => ({ id: null, url: u, isDefault: true }));
+        let customs = filteredPublic.map(item => ({ id: item.id, url: item.url, uid: item.uid, isPublicCustom: true }));
+        items = [...defaults, ...customs];
+      }
+    }
+
+    let html = "";
+    items.forEach(item => {
+      let deleteBtnHtml = "";
+      if (item.isPrivate) {
+        deleteBtnHtml = `<button onclick="removePrivateSticker('${item.url}', event)" style="position:absolute; top:2px; right:2px; background:rgba(211,47,47,0.85); color:white; border:none; border-radius:50%; width:20px; height:20px; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center;" title="Hapus dari Koleksi">×</button>`;
+      } else if (item.isPublicCustom && item.id && (isAdmin() || (currentUser && item.uid === currentUser.uid))) {
+        deleteBtnHtml = `<button onclick="deletePublicSticker('${item.id}', event)" style="position:absolute; top:2px; right:2px; background:rgba(211,47,47,0.85); color:white; border:none; border-radius:50%; width:20px; height:20px; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center;" title="Hapus Stiker Publik">×</button>`;
+      }
+      html += `<div class="sticker-item" onclick="sendOrInsertSticker('${item.url}')"><img src="${item.url}" loading="lazy" onerror="this.style.display='none'">${deleteBtnHtml}</div>`;
+    });
+    grid.innerHTML = html || "<p style='font-size:0.8em; text-align:center;'>Belum ada stiker.</p>";
+  }
+
+  window.removePrivateSticker = async function(url, event) {
+    event.stopPropagation();
+    if(!currentUser) return;
+    if(confirm("Hapus item ini dari koleksi pribadi?")) {
+      try {
+        await updateDoc(doc(db, "users", currentUser.uid), {
+          savedStickers: arrayRemove(url)
+        });
+        if(currentUserProfile && currentUserProfile.savedStickers) {
+          currentUserProfile.savedStickers = currentUserProfile.savedStickers.filter(item => item !== url);
+        }
+        renderStickerGrid();
+      } catch(e) { alert("Gagal menghapus: " + e.message); }
+    }
+  }
+
+  window.deletePublicSticker = async function(stickerId, event) {
+    event.stopPropagation();
+    if(!currentUser) return;
+    if(confirm("Hapus stiker/GIF publik ini dari server?")) {
+      try {
+        await deleteDoc(doc(db, "public_stickers", stickerId));
+        alert("Stiker publik berhasil dihapus!");
+      } catch(e) { alert("Gagal menghapus: " + e.message); }
+    }
+  }
+
+  window.saveCustomStickerToPrivate = async function(url) {
+    if (!currentUser) { alert("Harap login terlebih dahulu!"); showLoginModal(); return; }
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        savedStickers: arrayUnion(url)
+      });
+      if(currentUserProfile) {
+        if(!currentUserProfile.savedStickers) currentUserProfile.savedStickers = [];
+        if(!currentUserProfile.savedStickers.includes(url)) currentUserProfile.savedStickers.push(url);
+      }
+      alert("Berhasil disimpan ke Koleksi Pribadi Anda!");
+    } catch(err) { alert("Gagal menyimpan: " + err.message); }
+  }
+
+  window.saveNewCustomSticker = async function() {
+    if (!currentUser) { alert("Harap login dulu!"); showLoginModal(); return; }
+    const input = document.getElementById('custom-sticker-url');
+    const url = input?.value.trim();
+    if(!url) return;
+
+    const lower = url.toLowerCase();
+    const type = (lower.includes('gif') || lower.includes('giphy') || lower.includes('tenor')) ? 'GIF' : 'IMG';
+
+    try {
+      await addDoc(collection(db, "public_stickers"), {
+        url: url,
+        type: type,
+        uid: currentUser.uid,
+        createdAt: serverTimestamp()
+      });
+      
+      input.value = "";
+      
+      activeStickerTab = type;
+      document.querySelectorAll('.sticker-tab-btn').forEach(b => {
+        if((type === 'IMG' && b.textContent.includes('Gambar')) || (type === 'GIF' && b.textContent.includes('GIF'))) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+      renderStickerGrid();
+
+      alert("Stiker/GIF berhasil dibagikan ke publik secara real-time!");
+    } catch(e) { alert("Gagal: " + e.message); }
+  }
+
+  window.sendOrInsertSticker = function(url) {
+    if(!currentUser) return;
+    const activeId = window.activeInputId || 'chat-text';
+    const ta = document.getElementById(activeId);
+    if(ta) {
+      ta.value += (ta.value ? " " : "") + url;
+      ta.focus();
+    }
+    document.getElementById('sticker-panel-box')?.classList.add('hidden');
+  }
+
+  window.handleMultipleImageUpload = function(e, target) {
+    if (!currentUser) { alert("Harap Login terlebih dahulu!"); showLoginModal(); return; }
+    const files = e.target.files;
+    if(!files || files.length === 0) return;
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = function(uploadEvent) {
+        const base64Str = uploadEvent.target.result;
+        if (target === 'chat') {
+          chatStagedImages.push(base64Str);
+          renderImagePreviews('chat');
+        } else if (target === 'comment') {
+          commentStagedImages.push(base64Str);
+          renderImagePreviews('comment');
+        } else if (target === 'ep-comment') {
+          epCommentStagedImages.push(base64Str);
+          renderImagePreviews('ep-comment');
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  }
+
+  window.removeStagedImage = function(target, index) {
+    if (target === 'chat') {
+      chatStagedImages.splice(index, 1);
+      renderImagePreviews('chat');
+    } else if (target === 'comment') {
+      commentStagedImages.splice(index, 1);
+      renderImagePreviews('comment');
+    } else if (target === 'ep-comment') {
+      epCommentStagedImages.splice(index, 1);
+      renderImagePreviews('ep-comment');
+    }
+  }
+
+  function renderImagePreviews(target) {
+    const containerId = target === 'chat' ? 'chat-image-previews' : (target === 'comment' ? 'comment-image-previews' : 'ep-comment-image-previews');
+    const imagesArray = target === 'chat' ? chatStagedImages : (target === 'comment' ? commentStagedImages : epCommentStagedImages);
+    const container = document.getElementById(containerId);
+    if(!container) return;
+
+    if (imagesArray.length === 0) {
+      container.innerHTML = '';
+      container.classList.add('hidden');
+      return;
+    }
+
+    container.classList.remove('hidden');
+    let html = '<div style="display:flex; gap:6px; flex-wrap:wrap; padding:6px; background:rgba(0,0,0,0.05); border-radius:4px; margin-bottom:6px;">';
+    imagesArray.forEach((img, idx) => {
+      html += `
+        <div style="position:relative; width:50px; height:50px; border-radius:4px; overflow:hidden; border:1px solid var(--border-color);">
+          <img src="${img}" style="width:100%; height:100%; object-fit:cover;">
+          <button type="button" onclick="removeStagedImage('${target}', ${idx})" style="position:absolute; top:1px; right:1px; background:rgba(211,47,47,0.9); color:white; border:none; border-radius:50%; width:16px; height:16px; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;">×</button>
+        </div>
+      `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+    window.handleProfileFileUpload = function(e, type) {
+    const file = e.target.files[0];
+    if(!file) return;
+
+    // Batasi ukuran file mentah yang dimasukkan
+    if (file.size > 8 * 1024 * 1024) {
+      alert("Ukuran file terlalu besar! Maksimal 8 MB.");
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(uploadEvent) {
+      const base64 = uploadEvent.target.result;
+      if (type === 'avatar') {
+        // Kompres avatar
+        resizeImageToDataURL(base64, 300, 300, 0.7, (compressedBase64) => {
+          document.getElementById('edit-avatar-url').value = compressedBase64;
+        });
+      } else if (type === 'banner') {
+        if (file.type.startsWith('image/')) {
+          // Kompres banner agar Base64 < 800 KB (Batas aman Firestore)
+          resizeImageToDataURL(base64, 800, 450, 0.65, (compressedBase64) => {
+            document.getElementById('edit-banner-url').value = compressedBase64;
+          });
+        } else {
+          // Jika file video/lainnya melebihi 900KB, berikan peringatan
+          if (file.size > 900 * 1024) {
+            alert("File video terlalu besar untuk disimpan langsung ke database! Harap gunakan URL link video atau gunakan file di bawah 900 KB.");
+            e.target.value = '';
+            return;
+          }
+          document.getElementById('edit-banner-url').value = base64;
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Fungsi Kompresi yang disesuaikan dengan limit 1 MB Firestore
+  function resizeImageToDataURL(dataURL, maxWidth, maxHeight, quality, callback) {
+    const img = new Image();
+    img.onload = function() {
+      let canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+      if (height > maxHeight) {
+        width = Math.round((width * maxHeight) / height);
+        height = maxHeight;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Mengubah gambar menjadi JPEG terkompresi
+      callback(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataURL;
+  }
+
+
+  window.scrollToMessage = function(msgId) {
+    const target = document.getElementById(`msg-${msgId}`);
+    if(target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.classList.add('highlight-msg');
+      setTimeout(() => target.classList.remove('highlight-msg'), 2000);
+    }
+  }
+
+  window.toggleChatReactionPopup = function(msgId, event) {
+    event?.stopPropagation();
+    document.querySelectorAll('.reaction-overlay').forEach(el => {
+      if(el.id !== `popup-${msgId}`) el.classList.add('hidden');
+    });
+    const popup = document.getElementById(`popup-${msgId}`);
+    if(popup) popup.classList.toggle('hidden');
+  }
+
+  window.addChatReaction = function(msgId, emoji) {
+    if(!currentUser) { alert("Login dulu untuk memberi reaksi!"); showLoginModal(); return; }
+    const userUid = currentUser.uid;
+    const userReactRef = ref(rtdb, `chat_msg_user_reactions/${msgId}/${userUid}`);
+
+    onValue(userReactRef, (snap) => {
+      const currentEmoji = snap.val();
+      if (currentEmoji === emoji) {
+        remove(userReactRef);
+        runTransaction(ref(rtdb, `chat_msg_reactions/${msgId}/${emoji}`), count => Math.max(0, (count || 0) - 1));
+      } else {
+        if (currentEmoji) {
+          runTransaction(ref(rtdb, `chat_msg_reactions/${msgId}/${currentEmoji}`), count => Math.max(0, (count || 0) - 1));
+        }
+        set(userReactRef, emoji);
+        runTransaction(ref(rtdb, `chat_msg_reactions/${msgId}/${emoji}`), count => (count || 0) + 1);
+      }
+    }, { onlyOnce: true });
+
+    document.getElementById(`popup-${msgId}`)?.classList.add('hidden');
+  }
+
+  window.toggleCommentReactionPopup = function(commentId, event) {
+    event?.stopPropagation();
+    document.querySelectorAll('.reaction-overlay').forEach(el => {
+      if(el.id !== `popup-comm-${commentId}`) el.classList.add('hidden');
+    });
+    const popup = document.getElementById(`popup-comm-${commentId}`);
+    if(popup) popup.classList.toggle('hidden');
+  }
+
+  window.addCommentReaction = function(commentId, emoji) {
+    if(!currentUser) { alert("Login dulu untuk memberi reaksi!"); showLoginModal(); return; }
+    const userUid = currentUser.uid;
+    const userReactRef = ref(rtdb, `comment_user_reactions/${commentId}/${userUid}`);
+
+    onValue(userReactRef, (snap) => {
+      const currentEmoji = snap.val();
+      if (currentEmoji === emoji) {
+        remove(userReactRef);
+        runTransaction(ref(rtdb, `comment_reactions/${commentId}/${emoji}`), count => Math.max(0, (count || 0) - 1));
+      } else {
+        if (currentEmoji) {
+          runTransaction(ref(rtdb, `comment_reactions/${commentId}/${currentEmoji}`), count => Math.max(0, (count || 0) - 1));
+        }
+        set(userReactRef, emoji);
+        runTransaction(ref(rtdb, `comment_reactions/${commentId}/${emoji}`), count => (count || 0) + 1);
+      }
+    }, { onlyOnce: true });
+
+    document.getElementById(`popup-comm-${commentId}`)?.classList.add('hidden');
+  }
+
+  window.promptCustomReaction = function(id, type) {
+    const customEmoji = prompt("Tempel/ketik emoji kustom:", "🤫");
+    if (customEmoji && customEmoji.trim()) {
+      const emojiClean = customEmoji.trim().slice(0, 4);
+      if (type === 'chat') {
+        addChatReaction(id, emojiClean);
+      } else if (type === 'comment') {
+        addCommentReaction(id, emojiClean);
+      }
+    }
+    document.querySelectorAll('.reaction-overlay').forEach(el => el.classList.add('hidden'));
+  };
+
+  window.addEventListener('click', () => {
+    document.querySelectorAll('.reaction-overlay').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.custom-select').forEach(s => s.classList.remove('open'));
+    document.querySelectorAll('.filter-box-item').forEach(item => item.classList.remove('open'));
+    document.getElementById('search-suggestions-box')?.classList.add('hidden');
+  });
+
+  function initRealtimeChat() {
+    const chatContainer = document.getElementById('chat-messages-container');
+    const loadMoreBtn = document.getElementById('btn-load-chat-more');
+    if(!chatContainer) return;
+
+    if (chatUnsubscribe) chatUnsubscribe();
+
+    const q = query(collection(db, "public_chat"), orderBy("createdAt", "desc"), limit(chatLimitCount));
+    
+    chatUnsubscribe = onSnapshot(q, (snapshot) => {
+      let docsList = [];
+      snapshot.forEach(docSnap => docsList.push({ id: docSnap.id, ...docSnap.data() }));
+      docsList.reverse();
+
+      if(snapshot.size >= chatLimitCount) {
+        loadMoreBtn?.classList.remove('hidden');
+      } else {
+        loadMoreBtn?.classList.add('hidden');
+      }
+
+      let html = "";
+      docsList.forEach(d => {
+        const msgId = d.id;
+        const isMe = currentUser && (d.uid === currentUser.uid);
+        const canManage = isMe || isAdmin();
+        const itemClass = isMe ? "chat-item me" : "chat-item other";
+        
+        const userInfo = getUserInfo(d.uid, d.username, d.avatarUrl, d.borderStyle);
+        
+        let timeStr = "Baru saja";
+        if(d.createdAt) {
+          const date = d.createdAt.toDate ? d.createdAt.toDate() : new Date(d.createdAt);
+          timeStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        let replyBoxHtml = "";
+        if(d.replyTo) {
+          replyBoxHtml = `
+            <div class="reply-quote-box" onclick="scrollToMessage('${d.replyTo.id}')">
+              <b>@${d.replyTo.author}</b>: ${d.replyTo.text.substring(0, 45)}...
+            </div>
+          `;
+        }
+
+        const parsedText = parseContentWithMedia(d.text, d.images);
+        const safeTextForJs = (d.text || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeAuthorForJs = (userInfo.username).replace(/'/g, "\\'");
+
+        html += `
+          <div class="${itemClass}" id="msg-${msgId}">
+            <span class="avatar-frame ${userInfo.borderStyle}" onclick="viewUserProfile('${d.uid}')">
+              <img src="${userInfo.avatarUrl}" class="user-avatar" loading="lazy" onerror="this.src='https://via.placeholder.com/32?text=U'">
+            </span>
+            <div class="chat-bubble" onclick="toggleChatReactionPopup('${msgId}', event)">
+              <div class="chat-header-info">
+                <span class="chat-author" onclick="viewUserProfile('${d.uid}')">${userInfo.username}</span>
+                <span class="chat-time">${timeStr}</span>
+              </div>
+              ${replyBoxHtml}
+              <div class="chat-text-body">${parsedText}</div>
+              
+              <div class="msg-reaction-row" id="reactions-row-${msgId}"></div>
+
+              <div class="chat-footer-actions" onclick="event.stopPropagation()">
+                <span onclick="startReply('${msgId}', '${safeAuthorForJs}', '${safeTextForJs}')">Balas</span>
+                ${isMe ? `<span onclick="startEditMessage('${msgId}', '${safeTextForJs}')">Edit</span>` : ''}
+                ${canManage ? `<span onclick="deleteChatMessage('${msgId}')" style="color:#d32f2f;">Hapus</span>` : ''}
+              </div>
+
+              <div id="popup-${msgId}" class="reaction-overlay hidden" onclick="event.stopPropagation()">
+                <span onclick="addChatReaction('${msgId}', '❤️')">❤️</span>
+                <span onclick="addChatReaction('${msgId}', '👍')">👍</span>
+                <span onclick="addChatReaction('${msgId}', '😂')">😂</span>
+                <span onclick="addChatReaction('${msgId}', '🔥')">🔥</span>
+                <span onclick="addChatReaction('${msgId}', '🎉')">🎉</span>
+                <span onclick="promptCustomReaction('${msgId}', 'chat')" title="Custom Emoji / Teks">🤫</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      chatContainer.innerHTML = html || "<p style='text-align:center; color:var(--text-muted);'>Belum ada pesan.</p>";
+
+      docsList.forEach(d => {
+        const msgId = d.id;
+        onValue(ref(rtdb, `chat_msg_reactions/${msgId}`), (snapRx) => {
+          const rxData = snapRx.val() || {};
+          const userUid = currentUser?.uid;
+
+          let mySelectedEmoji = null;
+          if (userUid) {
+            onValue(ref(rtdb, `chat_msg_user_reactions/${msgId}/${userUid}`), (userSnap) => {
+              mySelectedEmoji = userSnap.val();
+              renderChatReactionBadges(msgId, rxData, mySelectedEmoji);
+            }, { onlyOnce: true });
+          } else {
+            renderChatReactionBadges(msgId, rxData, null);
+          }
+        });
+      });
+      
+      if (isFirstChatLoad) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        isFirstChatLoad = false;
+      }
+    }, (error) => { console.error("Error loading chat messages:", error); });
+  }
+
+  window.loadMoreChatMessages = function() {
+    chatLimitCount += 15;
+    initRealtimeChat();
+  }
+
+  function renderChatReactionBadges(msgId, rxData, mySelectedEmoji) {
+    const rowEl = document.getElementById(`reactions-row-${msgId}`);
+    if(rowEl) {
+      let badgeHtml = "";
+      Object.keys(rxData).forEach(em => {
+        if(rxData[em] > 0) {
+          const isActive = (em === mySelectedEmoji);
+          badgeHtml += `<span class="msg-react-badge ${isActive ? 'active' : ''}" onclick="addChatReaction('${msgId}', '${em}')">${em} <b>${rxData[em]}</b></span>`;
+        }
+      });
+      rowEl.innerHTML = badgeHtml;
+    }
+  }
+
+  window.startReply = function(id, author, text) {
+    if(!currentUser) { alert("Login dulu!"); showLoginModal(); return; }
+    replyingTo = { id, author, text };
+    editingMsgId = null;
+    const previewText = document.getElementById('reply-preview-text');
+    if(previewText) previewText.textContent = `Membalas @${author}: "${text}"`;
+    document.getElementById('chat-reply-preview')?.classList.remove('hidden');
+    document.getElementById('chat-text')?.focus();
+  }
+
+  window.startEditMessage = function(id, currentText) {
+    if(!currentUser) return;
+    editingMsgId = id;
+    replyingTo = null;
+    const previewText = document.getElementById('reply-preview-text');
+    if(previewText) previewText.textContent = `Edit Pesan: "${currentText}"`;
+    document.getElementById('chat-reply-preview')?.classList.remove('hidden');
+    const chatText = document.getElementById('chat-text');
+    if(chatText) {
+      chatText.value = currentText;
+      chatText.focus();
+    }
+  }
+
+  window.cancelReplyOrEdit = function() {
+    replyingTo = null;
+    editingMsgId = null;
+    document.getElementById('chat-reply-preview')?.classList.add('hidden');
+    const chatText = document.getElementById('chat-text');
+    if(chatText) chatText.value = "";
+  }
+
+  window.deleteChatMessage = async function(id) {
+    if(confirm("Hapus pesan ini?")) {
+      try {
+        await deleteDoc(doc(db, "public_chat", id));
+      } catch(e) { alert("Gagal menghapus: " + e.message); }
+    }
+  }
+
+  const btnSendChat = document.getElementById('btn-send-chat');
+  if (btnSendChat) {
+    btnSendChat.addEventListener('click', async () => {
+      if (!currentUser) { alert("Silakan Login terlebih dahulu!"); showLoginModal(); return; }
+      const textInput = document.getElementById('chat-text');
+      const text = textInput ? textInput.value.trim() : '';
+      if(!text && chatStagedImages.length === 0) return;
+
+      try {
+        if (editingMsgId) {
+          await updateDoc(doc(db, "public_chat", editingMsgId), { text, images: chatStagedImages });
+        } else {
+          const currentUsername = currentUserProfile?.username || currentUser.displayName || currentUser.email.split('@')[0] || 'Pengguna';
+          const currentAvatar = cleanImageUrl(currentUserProfile?.avatarUrl) || currentUser.photoURL || '';
+          const currentBorder = currentUserProfile?.borderStyle || 'border-none';
+
+          const payload = { 
+            uid: currentUser.uid, 
+            username: currentUsername,
+            avatarUrl: currentAvatar,
+            borderStyle: currentBorder,
+            text, 
+            images: [...chatStagedImages],
+            createdAt: serverTimestamp() 
+          };
+          if(replyingTo) {
+            payload.replyTo = replyingTo;
+          }
+          await addDoc(collection(db, "public_chat"), payload);
+        }
+        if (textInput) textInput.value = "";
+        chatStagedImages = [];
+        renderImagePreviews('chat');
+        cancelReplyOrEdit();
+        const chatContainer = document.getElementById('chat-messages-container');
+        if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+      } catch(err) { alert(err.message); }
+    });
+  }
+
+  const colorPicker = document.getElementById('themeColorPicker');
+  const darkModeToggle = document.getElementById('darkModeToggle');
+
+  if(localStorage.getItem('saved_theme_color')) {
+    const savedColor = localStorage.getItem('saved_theme_color');
+    document.documentElement.style.setProperty('--primary-color', savedColor);
+    document.documentElement.style.setProperty('--primary-hover', adjustBrightness(savedColor, -20));
+    if(colorPicker) colorPicker.value = savedColor;
+  }
+
+  if(localStorage.getItem('dark_mode') === 'true') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if(darkModeToggle) darkModeToggle.innerHTML = `<svg class="app-icon" viewBox="0 0 24 24" width="16" height="16"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg> Dark Mode: ON`;
+  }
+
+  if(colorPicker) {
+    colorPicker.addEventListener('input', (e) => {
+      const val = e.target.value;
+      document.documentElement.style.setProperty('--primary-color', val);
+      document.documentElement.style.setProperty('--primary-hover', adjustBrightness(val, -20));
+      localStorage.setItem('saved_theme_color', val);
+    });
+  }
+
+  if(darkModeToggle) {
+    darkModeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('dark_mode', 'false');
+        darkModeToggle.innerHTML = `<svg class="app-icon" viewBox="0 0 24 24" width="16" height="16"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg> Dark Mode: OFF`;
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('dark_mode', 'true');
+        darkModeToggle.innerHTML = `<svg class="app-icon" viewBox="0 0 24 24" width="16" height="16"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg> Dark Mode: ON`;
+      }
+    });
+  }
+
+  function adjustBrightness(hex, percent) {
+    let num = parseInt(hex.replace("#",""), 16);
+    let amt = Math.round(2.55 * percent);
+    let R = (num >> 16) + amt;
+    let G = (num >> 8 & 0x00FF) + amt;
+    let B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255)).toString(16).slice(1);
+  }
+
+  const savedGridType = localStorage.getItem('preferred_grid_layout');
+  if (savedGridType) {
+    currentGridType = parseInt(savedGridType);
+    document.querySelectorAll('.grid-icon-btn').forEach((btn, idx) => {
+      if(idx + 1 === currentGridType) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+    const container = document.getElementById('hasil-pencarian');
+    if(container) {
+      container.className = `grid-layout-${currentGridType}`;
+    }
+  }
+
+  window.setGridLayout = function(type) {
+    currentGridType = type;
+    localStorage.setItem('preferred_grid_layout', type);
+    
+    document.querySelectorAll('.grid-icon-btn').forEach((btn, idx) => {
+      if(idx + 1 === type) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+    const container = document.getElementById('hasil-pencarian');
+    if(container) {
+      container.className = `grid-layout-${type}`;
+      applyFilters();
+    }
+  }
+
+  function formatOnlineStatus(lastSeenTimestamp) {
+    if(!lastSeenTimestamp) return "<span class='status-dot status-offline'></span> Offline";
+    const now = new Date();
+    const lastSeen = lastSeenTimestamp.toDate ? lastSeenTimestamp.toDate() : new Date(lastSeenTimestamp);
+    const diffMins = Math.floor((now - lastSeen) / 60000);
+    
+    if (diffMins >= 0 && diffMins < 3) return "<span class='status-dot status-online'></span> <b style='color:#4caf50;'>Online</b>";
+    else return `<span class='status-dot status-offline'></span> Offline`;
+  }
+
+  async function updateUserPresence() {
+    if (currentUser) {
+      try { await updateDoc(doc(db, "users", currentUser.uid), { lastSeen: serverTimestamp() }); } catch(e){}
+    }
+  }
+  setInterval(updateUserPresence, 60000);
+
+  async function trackAnimeView(seriesId) {
+    const storageKey = `viewed_series_${seriesId}`;
+    if (!localStorage.getItem(storageKey)) {
+      try {
+        await updateDoc(doc(db, "anime_series", seriesId), { views: increment(1) });
+        localStorage.setItem(storageKey, "true");
+      } catch (err) {}
+    }
+  }
+
+  function hideAllViews() {
+    document.getElementById('catalog-view')?.classList.add('hidden');
+    document.getElementById('bookmarks-view')?.classList.add('hidden');
+    document.getElementById('dashboard-view')?.classList.add('hidden');
+    document.getElementById('series-detail-view')?.classList.add('hidden');
+    document.getElementById('player-view')?.classList.add('hidden');
+  }
+
+  function handleRouting() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+    const seriesParam = urlParams.get('series');
+    const epParam = urlParams.get('ep');
+
+    hideAllViews();
+
+    if (pageParam === 'bookmarks') {
+      document.getElementById('bookmarks-view')?.classList.remove('hidden');
+      loadBookmarksView();
+    } else if (pageParam === 'dashboard') {
+      document.getElementById('dashboard-view')?.classList.remove('hidden');
+      initDefaultServerRow();
+      if (currentUser) loadMyDatabaseTables();
+    } else if (seriesParam && epParam) {
+      document.getElementById('player-view')?.classList.remove('hidden');
+      trackAnimeView(seriesParam);
+      loadEpisodeDetail(seriesParam, epParam);
+      initDynamicReactions();
+    } else if (seriesParam) {
+      document.getElementById('series-detail-view')?.classList.remove('hidden');
+      trackAnimeView(seriesParam);
+      loadSeriesDetail(seriesParam);
+      initDynamicReactions();
+    } else {
+      document.getElementById('catalog-view')?.classList.remove('hidden');
+      initPublicCatalog();
+      if (!window.chatInitialized) {
+        initRealtimeChat();
+        window.chatInitialized = true;
+      }
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  window.navigateTo = function(url, push = true) {
+    if (push) {
+      history.pushState({}, '', url);
+    }
+    handleRouting();
+  };
+
+  document.addEventListener('click', (e) => {
+    const anchor = e.target.closest('a');
+    if (!anchor) return;
+    
+    const href = anchor.getAttribute('href');
+    if (href && (href.startsWith('?') || href === '')) {
+      e.preventDefault();
+      window.navigateTo(href);
+    }
+  });
+
+  window.addEventListener('popstate', () => {
+    handleRouting();
+  });
+
+  document.querySelectorAll('.custom-select').forEach(sel => {
+    const trigger = sel.querySelector('.select-trigger');
+    const parentBox = sel.closest('.filter-box-item');
+    if(trigger) {
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = sel.classList.contains('open');
+        
+        document.querySelectorAll('.custom-select').forEach(s => s.classList.remove('open'));
+        document.querySelectorAll('.filter-box-item').forEach(item => item.classList.remove('open'));
+
+        if (!isOpen) {
+          sel.classList.add('open');
+          if(parentBox) parentBox.classList.add('open');
+        }
+      });
+    }
+    sel.querySelectorAll('.option-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sel.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+        sel.setAttribute('data-value', item.getAttribute('data-value'));
+        
+        if(trigger) {
+          trigger.textContent = item.textContent;
+        }
+        sel.classList.remove('open');
+        if(parentBox) parentBox.classList.remove('open');
+        applyFilters();
+      });
+    });
+  });
+
+  document.querySelectorAll('.genre-checkbox-item input').forEach(chk => {
+    chk.addEventListener('change', () => {
+      const checked = Array.from(document.querySelectorAll('.genre-checkbox-item input:checked')).map(i => i.value);
+      const genreTrigger = document.getElementById('genre-trigger');
+      if(genreTrigger) genreTrigger.textContent = checked.length > 0 ? `${checked.length} Genre Dipilih` : 'Semua Genre';
+      applyFilters();
+    });
+  });
+
+  window.viewUserProfile = async function(uid) {
+    const modal = document.getElementById('profile-modal-box');
+    const container = document.getElementById('profile-card-display');
+    const logoutWrapper = document.getElementById('profile-logout-btn-wrapper');
+    if(!modal || !container) return;
+    container.innerHTML = "<div style='padding:15px;'><div class='skeleton' style='height:180px;'></div><div class='skeleton' style='height:70px; width:70px; border-radius:50%; margin-top:-35px; margin-left:15px;'></div></div>";
+    modal.classList.remove('hidden');
+
+    let userDocRef = doc(db, "users", uid);
+    let userDoc = await getDoc(userDocRef);
+
+    let u;
+    if(!userDoc.exists()) {
+      u = {
+        username: currentUser && currentUser.uid === uid ? currentUser.email.split('@')[0] : 'Pengguna',
+        avatarUrl: '', bannerUrl: '', borderStyle: 'border-none',
+        bio: 'Pengguna belum mengatur bio.', savedStickers: [], lastSeen: serverTimestamp()
+      };
+      try { await setDoc(userDocRef, u, { merge: true }); } catch(e) {}
+    } else {
+      u = userDoc.data();
+    }
+
+    const banner = cleanImageUrl(u.bannerUrl) || '';
+    const isVideoBanner = banner && (banner.toLowerCase().endsWith('.mp4') || banner.includes('data:video/') || banner.includes('.webm'));
+
+    let bannerHtml = '';
+    if (isVideoBanner) {
+      bannerHtml = `<div class="profile-banner" style="background:#000;"><video src="${banner}" autoplay loop muted playsinline></video></div>`;
+    } else {
+      const bannerBg = banner || 'https://via.placeholder.com/400x180?text=Banner';
+      bannerHtml = `<div class="profile-banner" style="background-image: url('${bannerBg}');"></div>`;
+    }
+
+    const avatar = cleanImageUrl(u.avatarUrl) || 'https://via.placeholder.com/70?text=User';
+    const border = u.borderStyle || 'border-none';
+    const username = u.username || 'Pengunjung';
+    const bio = u.bio || 'Pengguna ini belum menulis bio.';
+    const statusHtml = formatOnlineStatus(u.lastSeen);
+
+    const qUserPosts = query(collection(db, "anime_series"), where("authorUid", "==", uid));
+    const userPostsSnap = await getDocs(qUserPosts);
+    let uploadsHtml = "";
+
+    if (!userPostsSnap.empty) {
+      uploadsHtml += `
+        <div class="profile-uploads-section">
+          <b style="font-size:0.85em; color:var(--text-color);">📁 Postingan Anime (${userPostsSnap.size}):</b>
+          <div class="profile-uploads-list">
+      `;
+      userPostsSnap.forEach(pDoc => {
+        const pData = pDoc.data();
+        uploadsHtml += `
+          <a href="?series=${pDoc.id}" class="user-upload-item-link">
+            <span>🎬</span>
+            <span style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${pData.title}</span>
+            <span style="font-size:0.75em; color:var(--text-muted);">★ ${pData.rating || 0}</span>
+          </a>
+        `;
+      });
+      uploadsHtml += `</div></div>`;
+    } else {
+      uploadsHtml = `
+        <div class="profile-uploads-section">
+          <p style="font-size:0.8em; color:var(--text-muted); margin:0;">Belum ada postingan anime yang di-upload oleh pengguna ini.</p>
+        </div>
+      `;
+    }
+
+    container.innerHTML = `
+      ${bannerHtml}
+      <div class="profile-body">
+        <div class="profile-avatar-wrapper">
+          <span class="avatar-frame ${border}">
+            <img src="${avatar}" class="user-avatar" style="width:70px; height:70px;" loading="lazy" onerror="this.src='https://via.placeholder.com/70?text=User'">
+          </span>
+        </div>
+        <h3 style="margin:0;">${username}</h3>
+        <p style="font-size:0.8em; color:var(--text-muted); margin:4px 0 10px;">${statusHtml}</p>
+        <p style="font-size:0.88em; line-height:1.4; margin-bottom: 8px;">${bio}</p>
+        ${uploadsHtml}
+      </div>
+    `;
+
+    if (currentUser && currentUser.uid === uid) {
+      document.getElementById('btn-edit-profile-trigger')?.classList.remove('hidden');
+      if(logoutWrapper) {
+        logoutWrapper.innerHTML = `<button class="btn-danger" style="font-size:0.85em; padding:6px 12px;" onclick="handleSignOut()">Sign Out</button>`;
+      }
+    } else {
+      document.getElementById('btn-edit-profile-trigger')?.classList.add('hidden');
+      if(logoutWrapper) logoutWrapper.innerHTML = "";
+    }
+  }
+
+  window.showProfileEditForm = function() {
+    if (currentUserProfile) {
+      document.getElementById('edit-username').value = currentUserProfile.username || '';
+      document.getElementById('edit-avatar-url').value = currentUserProfile.avatarUrl || '';
+      document.getElementById('edit-banner-url').value = currentUserProfile.bannerUrl || '';
+      document.getElementById('edit-border-style').value = currentUserProfile.borderStyle || 'border-none';
+      document.getElementById('edit-bio').value = currentUserProfile.bio || '';
+    }
+    document.getElementById('profile-edit-box')?.classList.remove('hidden');
+  };
+
+  const btnSaveProfile = document.getElementById('btn-save-profile');
+  if(btnSaveProfile) {
+    btnSaveProfile.addEventListener('click', async () => {
+      if(!currentUser) return;
+      const username = document.getElementById('edit-username')?.value.trim() || currentUser.email.split('@')[0];
+      const avatarUrl = cleanImageUrl(document.getElementById('edit-avatar-url')?.value);
+      const bannerUrl = cleanImageUrl(document.getElementById('edit-banner-url')?.value);
+      const borderStyle = document.getElementById('edit-border-style')?.value;
+      const bio = document.getElementById('edit-bio')?.value.trim();
+
+      try {
+        const dataObj = { username, avatarUrl, bannerUrl, borderStyle, bio, lastSeen: serverTimestamp() };
+        await setDoc(doc(db, "users", currentUser.uid), dataObj, { merge: true });
+        alert("Profil berhasil diperbarui!");
+        hideProfileEditForm();
+        viewUserProfile(currentUser.uid);
+      } catch(err) { alert(err.message); }
+    });
+  }
+
+  const btnRegister = document.getElementById('btn-register');
+  if(btnRegister) {
+    btnRegister.addEventListener('click', async () => {
+      try {
+        const emailVal = document.getElementById('auth-email')?.value;
+        const passVal = document.getElementById('auth-password')?.value;
+        const cred = await createUserWithEmailAndPassword(auth, emailVal, passVal);
+        
+        await sendEmailVerification(cred.user);
+
+        await setDoc(doc(db, "users", cred.user.uid), {
+          username: cred.user.email.split('@')[0],
+          avatarUrl: '', bannerUrl: '', borderStyle: 'border-none',
+          bio: 'Halo, saya pengguna baru!', savedStickers: [], lastSeen: serverTimestamp()
+        });
+
+        await signOut(auth);
+
+        alert("Pendaftaran berhasil! Email aktivasi telah dikirim ke " + emailVal + ". Silakan periksa inbox/spam Anda untuk verifikasi sebelum bisa login.");
+        hideLoginModal();
+      } catch (err) {
+        const errEl = document.getElementById('auth-error');
+        if(errEl) errEl.textContent = err.message;
+      }
+    });
+  }
+
+  window.resendVerificationEmail = async function() {
+    if (auth.currentUser) {
+      try {
+        await sendEmailVerification(auth.currentUser);
+        alert("Email verifikasi berhasil dikirim ulang! Silakan periksa kotak masuk atau folder spam Anda.");
+      } catch(err) {
+        alert("Gagal mengirim ulang: " + err.message);
+      }
+    }
+  };
+
+  const btnForgotPassword = document.getElementById('btn-forgot-password');
+  if(btnForgotPassword) {
+    btnForgotPassword.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('auth-email')?.value.trim();
+      if(!email) {
+        alert("Harap masukkan email Anda terlebih dahulu pada kolom Email di atas untuk melakukan reset password.");
+        document.getElementById('auth-email')?.focus();
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        alert("Link reset password telah dikirim ke email " + email + ". Silakan periksa inbox/spam Anda.");
+      } catch(err) {
+        alert("Gagal mengirim email reset password: " + err.message);
+      }
+    });
+  }
+
+  const btnGoogleLogin = document.getElementById('btn-google-login');
+  if(btnGoogleLogin) {
+    btnGoogleLogin.addEventListener('click', async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if(!userDoc.exists()) {
+          await setDoc(userDocRef, {
+            username: user.displayName || user.email.split('@')[0],
+            avatarUrl: user.photoURL || '',
+            bannerUrl: '',
+            borderStyle: 'border-none',
+            bio: 'Halo, saya pengguna baru!',
+            savedStickers: [],
+            lastSeen: serverTimestamp()
+          });
+        }
+        hideLoginModal();
+        alert("Berhasil login dengan akun Google!");
+      } catch(err) {
+        const errEl = document.getElementById('auth-error');
+        if(errEl) errEl.textContent = err.message;
+      }
+    });
+  }
+
+  const btnLogin = document.getElementById('btn-login');
+  if(btnLogin) {
+    btnLogin.addEventListener('click', async () => {
+      try {
+        const emailVal = document.getElementById('auth-email')?.value;
+        const passVal = document.getElementById('auth-password')?.value;
+        const cred = await signInWithEmailAndPassword(auth, emailVal, passVal);
+        
+        if (!cred.user.emailVerified) {
+          await signOut(auth);
+          throw new Error("Akun belum diaktifkan! Silakan cek kotak masuk atau folder spam email Anda untuk melakukan verifikasi terlebih dahulu sebelum login.");
+        }
+
+        hideLoginModal();
+      } catch (err) {
+        const errEl = document.getElementById('auth-error');
+        if(errEl) errEl.textContent = err.message;
+      }
+    });
+  }
+
+  window.handleSignOut = async function() {
+    if (currentUser) {
+      try { await updateDoc(doc(db, "users", currentUser.uid), { lastSeen: Timestamp.fromMillis(Date.now() - 300000) }); } catch(e){}
+    }
+    signOut(auth).then(() => {
+      alert("Anda telah berhasil Sign Out!");
+      window.navigateTo("?");
+    }).catch((err) => { alert("Gagal Sign Out: " + err.message); });
+  }
+
+  const btnLogout = document.getElementById('btn-logout');
+  if(btnLogout) {
+    btnLogout.addEventListener('click', (e) => { e.preventDefault(); handleSignOut(); });
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    window.currentUser = user;
+    const dashLink = document.getElementById('nav-dashboard-link');
+    const authLink = document.getElementById('nav-auth-link');
+    const navUserProfileDisplay = document.getElementById('nav-user-profile-display');
+    const verificationBanner = document.getElementById('email-verification-banner');
+
+    if (user) {
+      dashLink?.classList.remove('hidden');
+      authLink?.classList.add('hidden');
+      navUserProfileDisplay?.classList.remove('hidden');
+
+      if (!user.emailVerified) {
+        verificationBanner?.classList.remove('hidden');
+      } else {
+        verificationBanner?.classList.add('hidden');
+      }
+      
+      onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+        if(docSnap.exists()) {
+          currentUserProfile = docSnap.data();
+          const avatar = cleanImageUrl(currentUserProfile.avatarUrl) || "https://via.placeholder.com/32?text=U";
+          const border = currentUserProfile.borderStyle || "border-none";
+          const username = currentUserProfile.username || user.email.split('@')[0];
+
+          const navAvatar = document.getElementById('nav-user-avatar');
+          const navFrame = document.getElementById('nav-avatar-frame');
+          const navName = document.getElementById('nav-username-text');
+          if(navAvatar) navAvatar.src = avatar;
+          if(navFrame) navFrame.className = `avatar-frame ${border}`;
+          if(navName) navName.textContent = username;
+        }
+      }, (error) => { console.error("Error loading current user profile:", error); });
+
+      const userEmailEl = document.getElementById('user-email');
+      if(userEmailEl) userEmailEl.textContent = user.email;
+
+      if (isAdmin()) {
+        const dTitle = document.getElementById('dashboard-main-title');
+        if(dTitle) dTitle.textContent = "Dashboard Admin Utama (Pengelola Semua Postingan)";
+        const lbl = document.getElementById('db-tab-btn-label');
+        if(lbl) lbl.textContent = "Database Admin (Semua Series & Episode)";
+        const sh = document.getElementById('db-series-heading');
+        if(sh) sh.textContent = "Database Admin: Seluruh Series User & Admin";
+        const eh = document.getElementById('db-eps-heading');
+        if(eh) eh.textContent = "Database Admin: Seluruh Episode User & Admin";
+      }
+
+      loadDropdownSeries();
+      updateUserPresence();
+      const pageParam = new URLSearchParams(window.location.search).get('page');
+      if(pageParam === 'dashboard') {
+        loadMyDatabaseTables();
+        initDefaultServerRow();
+      }
+    } else {
+      dashLink?.classList.add('hidden');
+      authLink?.classList.remove('hidden');
+      navUserProfileDisplay?.classList.add('hidden');
+      verificationBanner?.classList.add('hidden');
+      if(window.location.search.includes('page=dashboard')) {
+        window.navigateTo("?");
+      }
+    }
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('series') && !urlParams.get('ep')) updateCommentFormUI();
+    if (urlParams.get('series') && urlParams.get('ep')) updateEpCommentFormUI();
+  });
+
+  const btnSaveSeries = document.getElementById('btn-save-series');
+  if(btnSaveSeries) {
+    btnSaveSeries.addEventListener('click', async () => {
+      const editId = document.getElementById('edit-series-id')?.value;
+      const title = document.getElementById('series-title')?.value;
+      const genre = document.getElementById('series-genre')?.value;
+      const rating = parseFloat(document.getElementById('series-rating')?.value) || 0;
+      const status = document.getElementById('series-status')?.value;
+      const type = document.getElementById('series-type')?.value;
+      const season = document.getElementById('series-season')?.value;
+      const studio = document.getElementById('series-studio')?.value;
+      const poster = cleanImageUrl(document.getElementById('series-poster')?.value);
+      const desc = document.getElementById('series-desc')?.value;
+
+      if (!title) return alert("Judul wajib diisi!");
+      try {
+        const slug = createSlug(title);
+        const seriesId = editId ? editId : slug;
+
+        const dataObj = { 
+          title, genre, rating, status, type, season, studio, posterUrl: poster, description: desc,
+          authorUid: currentUser.uid,
+          updatedAt: serverTimestamp()
+        };
+
+        if (editId) {
+          await updateDoc(doc(db, "anime_series", editId), dataObj);
+          localStorage.removeItem('cache_all_anime_data');
+          alert("Series diperbarui!"); resetSeriesForm();
+        } else {
+          dataObj.views = 0;
+          dataObj.createdAt = serverTimestamp();
+          await setDoc(doc(db, "anime_series", seriesId), dataObj);
+          localStorage.removeItem('cache_all_anime_data');
+          alert("Series berhasil di-upload!");
+          document.getElementById('series-title').value = "";
+          document.getElementById('series-genre').value = "";
+          document.getElementById('series-rating').value = "";
+          document.getElementById('series-poster').value = "";
+          document.getElementById('series-desc').value = "";
+        }
+        loadDropdownSeries();
+      } catch (err) { alert("Error: " + err.message); }
+    });
+  }
+
+  window.editSeries = async function(id) {
+    const d = await getDoc(doc(db, "anime_series", id));
+    if(d.exists()) {
+      const dat = d.data();
+      document.getElementById('edit-series-id').value = id;
+      document.getElementById('series-title').value = dat.title;
+      document.getElementById('series-genre').value = dat.genre;
+      document.getElementById('series-rating').value = dat.rating || 0;
+      document.getElementById('series-status').value = dat.status || 'Ongoing';
+      document.getElementById('series-type').value = dat.type || 'TV';
+      document.getElementById('series-season').value = dat.season || 'Winter 2026';
+      document.getElementById('series-studio').value = dat.studio || 'MAPPA';
+      document.getElementById('series-poster').value = dat.posterUrl;
+      document.getElementById('series-desc').value = dat.description;
+      document.getElementById('series-form-title').textContent = "Edit Anime Series";
+      document.getElementById('btn-cancel-series').classList.remove('hidden');
+      switchSubForm('form-series');
+    }
+  }
+
+  window.resetSeriesForm = function() {
+    document.getElementById('edit-series-id').value = "";
+    document.getElementById('series-title').value = "";
+    document.getElementById('series-genre').value = "";
+    document.getElementById('series-rating').value = "";
+    document.getElementById('series-poster').value = "";
+    document.getElementById('series-desc').value = "";
+    document.getElementById('series-form-title').textContent = "Tambah Anime Series Baru";
+    document.getElementById('btn-cancel-series').classList.add('hidden');
+  }
+
+  window.deleteSeries = async function(id, title) {
+    if(confirm(`Hapus series "${title}"?`)) {
+      await deleteDoc(doc(db, "anime_series", id));
+      localStorage.removeItem('cache_all_anime_data');
+      alert("Series berhasil dihapus!"); 
+      const pageParam = new URLSearchParams(window.location.search).get('page');
+      if(pageParam === 'dashboard') loadMyDatabaseTables();
+      else window.navigateTo("?");
+    }
+  }
+
+  function initDefaultServerRow() {
+    const container = document.getElementById('server-inputs-container');
+    if(container && container.children.length === 0) {
+      window.addServerInputRow('Server Utama', '');
+    }
+  }
+
+  const btnSaveEpisode = document.getElementById('btn-save-episode');
+  if(btnSaveEpisode) {
+    btnSaveEpisode.addEventListener('click', async () => {
+      const editId = document.getElementById('edit-ep-id')?.value;
+      const seriesId = document.getElementById('select-anime-series')?.value;
+      const epNum = document.getElementById('ep-number')?.value;
+      const title = document.getElementById('ep-title')?.value;
+      const thumbnail = cleanImageUrl(document.getElementById('ep-thumbnail')?.value);
+
+      const serverRows = document.querySelectorAll('.server-input-row');
+      const servers = [];
+      serverRows.forEach(row => {
+        const name = row.querySelector('.srv-name').value.trim();
+        const url = row.querySelector('.srv-url').value.trim();
+        if (url) {
+          servers.push({ name: name || `Server ${servers.length + 1}`, url });
+        }
+      });
+
+      if (!seriesId || !epNum) return alert("Pilih series dan nomor episode!");
+      if (servers.length === 0) return alert("Minimal masukkan 1 URL server video!");
+
+      try {
+        const payload = { 
+          seriesId, 
+          episodeNumber: parseInt(epNum), 
+          title, 
+          thumbnailUrl: thumbnail, 
+          servers: servers, 
+          updatedAt: serverTimestamp()
+        };
+
+        if (editId) {
+          await updateDoc(doc(db, "episodes", editId), payload);
+          await updateDoc(doc(db, "anime_series", seriesId), { updatedAt: serverTimestamp() });
+          localStorage.removeItem('cache_all_anime_data');
+          alert("Episode diperbarui!"); resetEpForm();
+        } else {
+          payload.authorUid = currentUser.uid;
+          payload.createdAt = serverTimestamp();
+          await addDoc(collection(db, "episodes"), payload);
+          await updateDoc(doc(db, "anime_series", seriesId), { updatedAt: serverTimestamp() });
+          localStorage.removeItem('cache_all_anime_data');
+          alert("Episode berhasil di-upload!");
+          document.getElementById('ep-number').value = ""; 
+          document.getElementById('ep-title').value = ""; 
+          document.getElementById('ep-thumbnail').value = ""; 
+          const container = document.getElementById('server-inputs-container');
+          if(container) container.innerHTML = "";
+          initDefaultServerRow();
+        }
+        const pageParam = new URLSearchParams(window.location.search).get('page');
+        if(pageParam === 'dashboard') loadMyDatabaseTables();
+      } catch (err) { alert("Error: " + err.message); }
+    });
+  }
+
+  window.editEpisode = async function(id) {
+    const d = await getDoc(doc(db, "episodes", id));
+    if(d.exists()) {
+      const dat = d.data();
+      document.getElementById('edit-ep-id').value = id;
+      document.getElementById('select-anime-series').value = dat.seriesId;
+      document.getElementById('ep-number').value = dat.episodeNumber;
+      document.getElementById('ep-title').value = dat.title || '';
+      document.getElementById('ep-thumbnail').value = dat.thumbnailUrl || '';
+      
+      const container = document.getElementById('server-inputs-container');
+      if(container) {
+        container.innerHTML = "";
+        let serversList = dat.servers || [];
+        if (serversList.length === 0) {
+          if (dat.videoUrl) serversList.push({ name: 'Server Utama', url: dat.videoUrl });
+          if (dat.videoUrlAlt) serversList.push({ name: 'Server Alternatif', url: dat.videoUrlAlt });
+        }
+        
+        if(serversList.length > 0) {
+          serversList.forEach(srv => window.addServerInputRow(srv.name, srv.url));
+        } else {
+          initDefaultServerRow();
+        }
+      }
+
+      document.getElementById('ep-form-title').textContent = "Edit Episode";
+      document.getElementById('btn-cancel-ep').classList.remove('hidden');
+      switchSubForm('form-episode');
+    }
+  }
+
+  window.resetEpForm = function() {
+    document.getElementById('edit-ep-id').value = "";
+    document.getElementById('ep-number').value = "";
+    document.getElementById('ep-title').value = "";
+    document.getElementById('ep-thumbnail').value = "";
+    const container = document.getElementById('server-inputs-container');
+    if(container) {
+      container.innerHTML = "";
+      initDefaultServerRow();
+    }
+    document.getElementById('ep-form-title').textContent = "Tambah Episode Baru";
+    document.getElementById('btn-cancel-ep').classList.add('hidden');
+  }
+
+  window.deleteEpisode = async function(id, num) {
+    if(confirm(`Hapus Episode ${num}?`)) {
+      await deleteDoc(doc(db, "episodes", id));
+      localStorage.removeItem('cache_all_anime_data');
+      alert("Episode dihapus!"); loadMyDatabaseTables();
+    }
+  }
+
+  async function loadDropdownSeries() {
+    const sel = document.getElementById('select-anime-series');
+    if(!sel || !currentUser) return;
+    sel.innerHTML = "<option value=''>-- Pilih Series --</option>";
+    try {
+      const qSnap = isAdmin() ? query(collection(db, "anime_series")) : query(collection(db, "anime_series"), where("authorUid", "==", currentUser.uid));
+      const snap = await getDocs(qSnap);
+      snap.forEach(d => { sel.innerHTML += `<option value="${d.id}">${d.data().title}</option>`; });
+    } catch(err) { console.error("Error loading dropdown series:", err); }
+  }
+
+  window.loadMyDatabaseTables = async function() {
+    if(!currentUser) return;
+    try {
+      const qSeries = isAdmin() ? query(collection(db, "anime_series")) : query(collection(db, "anime_series"), where("authorUid", "==", currentUser.uid));
+      const sSnap = await getDocs(qSeries);
+      let sHtml = "<table><tr><th>Judul</th><th>Rating</th><th>Views</th><th>Aksi</th></tr>";
+      sSnap.forEach(d => {
+        const dat = d.data();
+        sHtml += `<tr><td>${dat.title}</td><td>★ ${dat.rating||0}</td><td>👁 ${dat.views||0}</td><td><button class="btn-edit" onclick="editSeries('${d.id}')">Edit</button><button class="btn-danger" onclick="deleteSeries('${d.id}', '${dat.title.replace(/'/g,"\\'")}')">Hapus</button></td></tr>`;
+      });
+      sHtml += "</table>";
+      const seriesTable = document.getElementById('my-series-table-container');
+      if(seriesTable) seriesTable.innerHTML = sHtml;
+
+      const qEps = isAdmin() ? query(collection(db, "episodes")) : query(collection(db, "episodes"), where("authorUid", "==", currentUser.uid));
+      const eSnap = await getDocs(qEps);
+      let eHtml = "<table><tr><th>No. Eps</th><th>Judul Episode</th><th>Aksi</th></tr>";
+      eSnap.forEach(d => {
+        const dat = d.data();
+        eHtml += `<tr><td>Eps ${dat.episodeNumber}</td><td>${dat.title||'-'}</td><td><button class="btn-edit" onclick="editEpisode('${d.id}')">Edit</button><button class="btn-danger" onclick="deleteEpisode('${d.id}', ${dat.episodeNumber})">Hapus</button></td></tr>`;
+      });
+      eHtml += "</table>";
+      const epTable = document.getElementById('my-ep-table-container');
+      if(epTable) epTable.innerHTML = eHtml;
+    } catch(err) { console.error("Error loading database tables:", err); }
+  }
+
+  async function initPublicCatalog() {
+    const container = document.getElementById('hasil-pencarian');
+    if(!container) return;
+    
+    const cachedData = localStorage.getItem('cache_all_anime_data');
+    if (cachedData) {
+      try {
+        allAnimeData = JSON.parse(cachedData);
+        applyFilters();
+        fetchAnimeDataFromFirebase(container, true);
+        return;
+      } catch (e) {
+        console.warn("Cache parse failed, resetting cache...", e);
+        localStorage.removeItem('cache_all_anime_data');
+      }
+    }
+
+    await fetchAnimeDataFromFirebase(container, false);
+  }
+
+  async function fetchAnimeDataFromFirebase(container, isBackground = false) {
+    if (!isBackground) {
+      container.innerHTML = `
+        <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-lines"><div class="skeleton skeleton-line medium"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-lines"><div class="skeleton skeleton-line medium"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line"></div></div></div>
+      `;
+    }
+
+    try {
+      const snap = await getDocs(collection(db, "anime_series"));
+      if(snap.empty) { 
+        if(!isBackground) container.innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-muted);'>Belum ada anime.</p>"; 
+        return; 
+      }
+
+      const epSnapAll = await getDocs(collection(db, "episodes"));
+      const episodesMap = {};
+      epSnapAll.forEach(e => {
+        const ed = e.data();
+        if(!episodesMap[ed.seriesId]) episodesMap[ed.seriesId] = [];
+        episodesMap[ed.seriesId].push({ id: e.id, ...ed });
+      });
+
+      allAnimeData = [];
+      snap.forEach(d => {
+        const dat = d.data();
+        const id = d.id;
+        
+        const eps = episodesMap[id] || [];
+        eps.sort((a,b) => a.episodeNumber - b.episodeNumber);
+
+        const latestEp = eps.length > 0 ? eps[eps.length - 1] : null;
+        let latestEpTime = dat.createdAt?.seconds || 0;
+        
+        if (latestEp && latestEp.createdAt) {
+          latestEpTime = latestEp.createdAt.seconds || latestEpTime;
+        }
+        if (dat.updatedAt && dat.updatedAt.seconds) {
+          latestEpTime = Math.max(latestEpTime, dat.updatedAt.seconds);
+        }
+
+        allAnimeData.push({ id, ...dat, episodes: eps, latestEp, latestEpTime });
+      });
+
+      localStorage.setItem('cache_all_anime_data', JSON.stringify(allAnimeData));
+      applyFilters();
+    } catch (err) {
+      console.error("Gagal memuat data dari server:", err);
+      if(!isBackground) {
+        container.innerHTML = "<p style='text-align:center; padding:20px; color:red;'>Gagal memuat data dari server. Periksa koneksi Anda.</p>";
+      }
+    }
+  }
+
+  window.handleLiveSearch = function(keyword) {
+    applyFilters();
+    
+    const box = document.getElementById('search-suggestions-box');
+    if(!box) return;
+    const term = keyword.trim().toLowerCase();
+    if(!term) {
+      box.classList.add('hidden');
+      box.innerHTML = '';
+      return;
+    }
+
+    const matched = allAnimeData.filter(item => 
+      item.title.toLowerCase().includes(term) || 
+      (item.genre && item.genre.toLowerCase().includes(term))
+    );
+
+    if(matched.length === 0) {
+      box.innerHTML = `<div style="padding: 10px; font-size: 0.85em; color: var(--text-muted); text-align: center;">Tidak ada anime ditemukan</div>`;
+      box.classList.remove('hidden');
+      return;
+    }
+
+    let html = "";
+    matched.slice(0, 5).forEach(item => {
+      const poster = cleanImageUrl(item.posterUrl) || "https://via.placeholder.com/32x45?text=No";
+      html += `
+        <div class="search-suggestion-item" onclick="selectSearchSuggestion('${item.id}')">
+          <img src="${poster}" class="search-suggestion-img" loading="lazy" onerror="this.src='https://via.placeholder.com/32x45?text=No'">
+          <div>
+            <div style="font-weight: bold; font-size: 0.88em;">${item.title}</div>
+            <div style="font-size: 0.75em; color: var(--text-muted);">★ ${item.rating || 0} | ${item.status || '-'}</div>
+          </div>
+        </div>
+      `;
+    });
+    box.innerHTML = html;
+    box.classList.remove('hidden');
+  }
+
+  window.selectSearchSuggestion = function(seriesId) {
+    document.getElementById('search-suggestions-box')?.classList.add('hidden');
+    window.navigateTo(`?series=${seriesId}`);
+  }
+
+  async function loadBookmarksView() {
+    const container = document.getElementById('bookmarks-container');
+    if(!container) return;
+    
+    container.innerHTML = `
+      <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-lines"><div class="skeleton skeleton-line medium"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line"></div></div></div>
+    `;
+    
+    let bookmarks = JSON.parse(localStorage.getItem('anime_bookmarks') || '[]');
+    if(bookmarks.length === 0) {
+      container.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:15px;'>Belum ada anime yang di-bookmark. Silakan tambahkan dari katalog.</p>";
+      return;
+    }
+
+    try {
+      const snap = await getDocs(collection(db, "anime_series"));
+      let bookmarkedList = [];
+      snap.forEach(d => {
+        if (bookmarks.includes(d.id)) {
+          bookmarkedList.push({ id: d.id, ...d.data() });
+        }
+      });
+
+      if(bookmarkedList.length === 0) {
+        container.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:15px;'>Anime yang di-bookmark tidak ditemukan atau sudah dihapus.</p>";
+        return;
+      }
+
+      let html = "";
+      bookmarkedList.forEach(dat => {
+        const poster = cleanImageUrl(dat.posterUrl) || "https://via.placeholder.com/100x140?text=No+Image";
+        const seriesUrl = `?series=${dat.id}`;
+
+        html += `
+          <div class="anime-card" style="display: flex; gap: 15px; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; background: var(--card-bg); width: 100%;">
+            <a href="${seriesUrl}"><img src="${poster}" class="anime-poster" style="width: 100px; height: 140px; object-fit: cover; border-radius: 4px;" loading="lazy" onerror="this.src='https://via.placeholder.com/100x140?text=No'"></a>
+            <div class="anime-info" style="flex: 1;">
+              <h4 class="anime-title"><a href="${seriesUrl}">${dat.title}</a></h4>
+              <p style="font-size:0.85em; color:var(--text-muted); margin: 3px 0;">★ ${dat.rating || 0} | 👁 ${dat.views || 0} Views | Status: ${dat.status||'-'}</p>
+              <p style="font-size:0.85em; margin: 3px 0 8px;">${dat.description ? dat.description.substring(0,90)+'...' : ''}</p>
+              <button class="btn-bookmark" onclick="toggleBookmark('${dat.id}', event)">⭐ Hapus Bookmark</button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    } catch(err) {
+      console.error("Error loading bookmarks:", err);
+      container.innerHTML = "<p style='color:red; text-align:center;'>Gagal memuat daftar bookmark.</p>";
+    }
+  }
+
+  window.applyFilters = async function() {
+    const selectedGenres = Array.from(document.querySelectorAll('.genre-checkbox-item input:checked')).map(i => i.value);
+    const selStatus = document.getElementById('f-status')?.getAttribute('data-value');
+    const selType = document.getElementById('f-type')?.getAttribute('data-value');
+    const selSeason = document.getElementById('f-season')?.getAttribute('data-value');
+    const selStudio = document.getElementById('f-studio')?.getAttribute('data-value');
+    const selOrder = document.getElementById('f-order')?.getAttribute('data-value') || 'updated';
+    const searchQuery = document.getElementById('anime-search-input')?.value.trim().toLowerCase() || '';
+
+    let filtered = allAnimeData.filter(item => {
+      if (selStatus && item.status !== selStatus) return false;
+      if (selType && item.type !== selType) return false;
+      if (selSeason && item.season !== selSeason) return false;
+      if (selStudio && item.studio !== selStudio) return false;
+      if (searchQuery && !item.title.toLowerCase().includes(searchQuery) && !(item.genre && item.genre.toLowerCase().includes(searchQuery))) return false;
+      if (selectedGenres.length > 0) {
+        const itemGenres = item.genre ? item.genre.split(',').map(g => g.trim().toLowerCase()) : [];
+        const match = selectedGenres.every(g => itemGenres.includes(g.toLowerCase()));
+        if (!match) return false;
+      }
+      return true;
+    });
+
+    if (selOrder === 'az') filtered.sort((a,b) => a.title.localeCompare(b.title));
+    else if (selOrder === 'za') filtered.sort((a,b) => b.title.localeCompare(a.title));
+    else if (selOrder === 'updated') filtered.sort((a,b) => b.latestEpTime - a.latestEpTime);
+    else if (selOrder === 'latest_added') filtered.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    else if (selOrder === 'release_old') filtered.sort((a,b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+    else if (selOrder === 'popular') filtered.sort((a,b) => (b.views || 0) - (a.views || 0));
+    else if (selOrder === 'rating') filtered.sort((a,b) => (b.rating || 0) - (a.rating || 0));
+
+    renderCatalog(filtered);
+  }
+
+  function renderCatalog(list) {
+    const container = document.getElementById('hasil-pencarian');
+    if(!container) return;
+    if(list.length === 0) { container.innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-muted);'>Tidak ada anime yang sesuai dengan filter.</p>"; return; }
+
+    let html = "";
+    list.forEach(dat => {
+      const poster = cleanImageUrl(dat.posterUrl) || "https://via.placeholder.com/100x140?text=No+Image";
+      const latestEp = dat.latestEp;
+      const seriesUrl = `?series=${dat.id}`;
+      let epLinkHtml = "<i style='font-size:0.75em; color:var(--text-muted);'>Belum ada episode</i>";
+
+      if (latestEp) {
+        const episodeUrl = `?series=${dat.id}&ep=${latestEp.episodeNumber}`;
+        epLinkHtml = `<a href="${episodeUrl}" class="ep-link">Eps ${latestEp.episodeNumber}${latestEp.title ? ': ' + latestEp.title : ''}</a>`;
+      }
+
+      const uploaderBadge = renderUploaderBadge(dat.authorUid, dat.authorName, dat.authorAvatar, dat.authorBorder, dat.createdAt);
+      const isBookmarkedNow = isBookmarked(dat.id);
+      const bookmarkBtn = `<button class="btn-bookmark" onclick="toggleBookmark('${dat.id}', event)">${isBookmarkedNow ? '⭐ Saved' : '☆ Bookmark'}</button>`;
+
+      if (currentGridType === 1) {
+        html += `
+          <div class="anime-card">
+            <div class="anime-poster-wrapper">
+              <a href="${seriesUrl}"><img src="${poster}" class="anime-poster" loading="lazy" onerror="this.src='https://via.placeholder.com/100x140?text=No'"></a>
+              <div class="card-badge-rating">★ ${dat.rating || 0}</div>
+            </div>
+            <div class="anime-info">
+              <div>
+                <h4 class="anime-title"><a href="${seriesUrl}">${dat.title}</a></h4>
+                ${uploaderBadge}
+                <div style="font-size:0.75em; color:var(--text-muted); margin: 3px 0;">👁 ${dat.views || 0} Views • ${dat.status||'Ongoing'}</div>
+              </div>
+              <div>
+                <div style="margin: 3px 0;">${epLinkHtml}</div>
+                <div class="card-action-btns">${bookmarkBtn}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (currentGridType === 2) {
+        html += `
+          <div class="anime-card">
+            <div class="anime-poster-wrapper">
+              <a href="${seriesUrl}"><img src="${poster}" class="anime-poster" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No'"></a>
+              <div class="card-badge-rating">★ ${dat.rating || 0}</div>
+              <div class="card-badge-status">${dat.status||'Ongoing'}</div>
+            </div>
+            <div class="anime-info">
+              <div>
+                <h4 class="anime-title"><a href="${seriesUrl}">${dat.title}</a></h4>
+                ${uploaderBadge}
+              </div>
+              <div>
+                ${epLinkHtml}
+                <div class="card-action-btns">${bookmarkBtn}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (currentGridType === 3) {
+        html += `
+          <div class="anime-card">
+            <div class="anime-poster-wrapper">
+              <a href="${seriesUrl}"><img src="${poster}" class="anime-poster" loading="lazy" onerror="this.src='https://via.placeholder.com/50x70?text=No'"></a>
+            </div>
+            <div class="anime-info">
+              <h4 class="anime-title"><a href="${seriesUrl}">${dat.title}</a></h4>
+              ${uploaderBadge}
+              <div style="font-size:0.72em; color:var(--text-muted); margin:2px 0;">★ ${dat.rating || 0} • 👁 ${dat.views || 0}</div>
+              <div class="card-action-btns">${bookmarkBtn}</div>
+            </div>
+          </div>
+        `;
+      }
+    });
+    container.innerHTML = html;
+  }
+
+  async function loadSeriesDetail(id) {
+    const detailView = document.getElementById('series-detail-view');
+    if(detailView) detailView.classList.remove('hidden');
+
+    const contentEl = document.getElementById('series-detail-content');
+    if(contentEl) {
+      contentEl.innerHTML = `
+        <div class="series-detail-card" style="margin-top:10px;">
+          <div class="skeleton skeleton-poster" style="width:170px; height:240px;"></div>
+          <div class="skeleton-lines" style="justify-content: center;">
+            <div class="skeleton skeleton-line medium" style="height:24px;"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line" style="height:60px;"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    try {
+      const d = await getDoc(doc(db, "anime_series", id));
+      if(!d.exists()) {
+        if(contentEl) contentEl.innerHTML = "<p style='color:var(--text-muted); text-align:center;'>Series anime tidak ditemukan.</p>";
+        return;
+      }
+      const dat = d.data();
+      
+      const epSnap = await getDocs(query(collection(db, "episodes"), where("seriesId", "==", id)));
+      const eps = []; 
+      epSnap.forEach(e => eps.push({id: e.id, ...e.data()}));
+      
+      const savedEpSort = localStorage.getItem(`ep_sort_pref_${id}`) || 'asc';
+      if (savedEpSort === 'desc') {
+        eps.sort((a,b) => b.episodeNumber - a.episodeNumber);
+      } else {
+        eps.sort((a,b) => a.episodeNumber - b.episodeNumber);
+      }
+
+      const seriesPoster = cleanImageUrl(dat.posterUrl) || "https://via.placeholder.com/90x60?text=No+Thumb";
+
+      if(contentEl) {
+        const uploaderBadge = renderUploaderBadge(dat.authorUid, dat.authorName, dat.authorAvatar, dat.authorBorder, dat.createdAt);
+        const isBookmarkedNow = isBookmarked(id);
+        const bookmarkBtn = `<button class="btn-bookmark" style="margin-top:10px; width:100%; max-width:200px;" onclick="toggleBookmark('${id}', event)">${isBookmarkedNow ? '⭐ Hapus Bookmark' : '☆ Tambahkan ke Bookmark'}</button>`;
+
+        contentEl.innerHTML = `
+          <div class="series-detail-card">
+            <img src="${cleanImageUrl(dat.posterUrl)||''}" class="series-detail-poster" alt="Poster Series" loading="lazy" onerror="this.src='https://via.placeholder.com/170x240?text=No+Poster'">
+            <div class="series-detail-info">
+              <h2 style="margin:0; color:var(--primary-color); font-size:1.35em; line-height:1.25;">${dat.title}</h2>
+              ${uploaderBadge}
+              <div class="series-meta-badges">
+                <span class="series-meta-badge">★ Rating: ${dat.rating || 0}</span>
+                <span class="series-meta-badge">👁 Views: ${dat.views || 0}</span>
+                <span class="series-meta-badge" style="background:rgba(0,0,0,0.06); color:var(--text-color); border-color:var(--border-color);">${dat.status||'Ongoing'}</span>
+              </div>
+              <p style="font-size: 0.85em; margin: 2px 0; color:var(--text-muted);"><b>Tipe:</b> ${dat.type||'-'} | <b>Season:</b> ${dat.season||'-'} | <b>Studio:</b> ${dat.studio||'-'}</p>
+              <p style="font-size: 0.88em; margin-top: 6px; line-height:1.45;"><b>Sinopsis:</b><br>${dat.description||'-'}</p>
+              <div style="margin-top:auto;">${bookmarkBtn}</div>
+            </div>
+          </div>
+          <hr style="margin:20px 0; border:none; border-top:1px solid var(--border-color);">
+          
+          <div class="ep-list-header">
+            <h3>Daftar Episode</h3>
+            <select id="ep-sort-dropdown" class="ep-sort-select">
+              <option value="asc" ${savedEpSort === 'asc' ? 'selected' : ''}>Awal - Akhir (Terlama)</option>
+              <option value="desc" ${savedEpSort === 'desc' ? 'selected' : ''}>Akhir - Awal (Terbaru)</option>
+            </select>
+          </div>
+          
+          <div id="episodes-list-box" class="ep-items-container"></div>
+        `;
+
+        renderCustomEpisodesList(eps, dat.title, seriesPoster, id);
+
+        const sortSelect = document.getElementById('ep-sort-dropdown');
+        if (sortSelect) {
+          sortSelect.addEventListener('change', (e) => {
+            const sortVal = e.target.value;
+            localStorage.setItem(`ep_sort_pref_${id}`, sortVal);
+
+            if (sortVal === 'desc') {
+              eps.sort((a,b) => b.episodeNumber - a.episodeNumber);
+            } else {
+              eps.sort((a,b) => a.episodeNumber - b.episodeNumber);
+            }
+            renderCustomEpisodesList(eps, dat.title, seriesPoster, id);
+          });
+        }
+      }
+
+      loadSeriesCommentsRealtime(id);
+      updateCommentFormUI();
+    } catch(err) {
+      console.error("Error loading series detail:", err);
+      if(contentEl) contentEl.innerHTML = "<p style='color:red; text-align:center;'>Gagal memuat detail series.</p>";
+    }
+  }
+
+  function loadSeriesCommentsRealtime(seriesId) {
+    const commContainer = document.getElementById('comments-list-container');
+    if(!commContainer) return;
+
+    if (seriesCommentsUnsubscribe) seriesCommentsUnsubscribe();
+
+    const qComm = query(collection(db, "anime_series", seriesId, "comments"), orderBy("createdAt", "asc"));
+    
+    seriesCommentsUnsubscribe = onSnapshot(qComm, (snap) => {
+      let commentsMap = {};
+      let rootComments = [];
+
+      snap.forEach(c => {
+        const cd = { id: c.id, ...c.data() };
+        commentsMap[cd.id] = { ...cd, replies: [] };
+      });
+
+      Object.values(commentsMap).forEach(cd => {
+        if (cd.replyToId && commentsMap[cd.replyToId]) {
+          commentsMap[cd.replyToId].replies.push(cd);
+        } else {
+          rootComments.push(cd);
+        }
+      });
+
+      let cHtml = "";
+      rootComments.forEach(cd => {
+        cHtml += renderRootCommentTree(cd, false, seriesId);
+      });
+
+      commContainer.innerHTML = cHtml || "<p style='color:var(--text-muted); text-align:center;'>Belum ada komentar.</p>";
+
+      Object.keys(commentsMap).forEach(cid => {
+        attachCommentReactionListener(cid);
+      });
+    }, (error) => { console.error("Error loading series comments:", error); });
+  }
+
+  function renderCustomEpisodesList(epsList, seriesTitle, defaultPoster, seriesId) {
+    const box = document.getElementById('episodes-list-box');
+    if (!box) return;
+    if (epsList.length === 0) {
+      box.innerHTML = "<p style='color:var(--text-muted); font-style:italic; text-align:center; padding:10px;'>Belum ada episode yang diupload.</p>";
+      return;
+    }
+
+    let html = "";
+    epsList.forEach(e => {
+      const epThumb = cleanImageUrl(e.thumbnailUrl) || defaultPoster;
+      const epTitleDisplay = e.title ? `${seriesTitle} Episode ${e.episodeNumber}: ${e.title}` : `${seriesTitle} Episode ${e.episodeNumber}`;
+      const epUploaderBadge = renderUploaderBadge(e.authorUid, e.authorName, e.authorAvatar, e.authorBorder, e.createdAt);
+
+      html += `
+        <div style="display:flex; align-items:center; background:var(--card-bg); border:1px solid var(--border-color); border-radius:8px; overflow:hidden;">
+          <a href="?series=${seriesId}&ep=${e.episodeNumber}" class="ep-item-card" style="border:none; flex:1; margin:0;">
+            <div class="ep-thumb-wrapper">
+              <img src="${epThumb}" class="ep-thumb-img" alt="Thumbnail" loading="lazy" onerror="this.src='https://via.placeholder.com/100x65?text=Episode'">
+            </div>
+            <div class="ep-item-details">
+              <div class="ep-item-title">${epTitleDisplay}</div>
+              ${epUploaderBadge}
+            </div>
+          </a>
+        </div>
+      `;
+    });
+    box.innerHTML = html;
+  }
+
+  function flattenReplies(commentObj) {
+    let result = [];
+    if (commentObj.replies && commentObj.replies.length > 0) {
+      commentObj.replies.forEach(rep => {
+        result.push(rep);
+        result = result.concat(flattenReplies(rep));
+      });
+    }
+    return result;
+  }
+
+  function renderRootCommentTree(rootCd, isEpisode = false, parentId = "") {
+    const flatList = flattenReplies(rootCd);
+    let repliesHtml = "";
+    
+    if (flatList.length > 0) {
+      repliesHtml += `<div class="replies-container">`;
+      flatList.forEach(rep => {
+        repliesHtml += renderCommentCard(rep, true, isEpisode, parentId);
+      });
+      repliesHtml += `</div>`;
+    }
+
+    return renderCommentCard(rootCd, false, isEpisode, parentId) + repliesHtml;
+  }
+
+  function renderCommentCard(cd, isNested, isEpisode = false, parentId = "") {
+    const userInfo = getUserInfo(cd.uid, cd.author, cd.avatarUrl, cd.borderStyle);
+    let timeStr = "Baru saja";
+    if(cd.createdAt) {
+      const date = cd.createdAt.toDate ? cd.createdAt.toDate() : new Date(cd.createdAt);
+      timeStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    const parsedCommentText = parseContentWithMedia(cd.text, cd.images);
+    const safeText = (cd.text || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const safeAuthor = (userInfo.username).replace(/'/g, "\\'");
+    const isMyComment = currentUser && (currentUser.uid === cd.uid || isAdmin());
+
+    return `
+      <div class="comment-card ${isNested ? 'nested-comment' : ''}" id="comm-${cd.id}">
+        <div class="comment-header-row">
+          <span class="avatar-frame ${userInfo.borderStyle}" onclick="viewUserProfile('${cd.uid}')">
+            <img src="${userInfo.avatarUrl}" class="user-avatar" loading="lazy" onerror="this.src='https://via.placeholder.com/32?text=U'">
+          </span>
+          <b style="cursor:pointer; font-size:0.85em; color:var(--primary-color);" onclick="viewUserProfile('${cd.uid}')">${userInfo.username}</b>
+          <span style="font-size:0.75em; color:var(--text-muted); margin-left:auto;">${timeStr}</span>
+        </div>
+        
+        <div class="comment-body-text" onclick="toggleCommentReactionPopup('${cd.id}', event)">
+          ${parsedCommentText}
+          <div class="msg-reaction-row" id="comm-reactions-row-${cd.id}"></div>
+
+          <div id="popup-comm-${cd.id}" class="reaction-overlay hidden" onclick="event.stopPropagation()">
+            <span onclick="addCommentReaction('${cd.id}', '❤️')">❤️</span>
+            <span onclick="addCommentReaction('${cd.id}', '👍')">👍</span>
+            <span onclick="addCommentReaction('${cd.id}', '😂')">😂</span>
+            <span onclick="addCommentReaction('${cd.id}', '🔥')">🔥</span>
+            <span onclick="addCommentReaction('${cd.id}', '🎉')">🎉</span>
+            <span onclick="promptCustomReaction('${cd.id}', 'comment')" title="Custom Emoji / Teks">🤫</span>
+          </div>
+        </div>
+
+        <div class="comment-footer-row">
+          <span onclick="${isEpisode ? `startEpCommentReply` : `startCommentReply`}('${cd.id}', '${safeAuthor}', '${safeText}')">Balas</span>
+          ${currentUser && currentUser.uid === cd.uid ? `<span onclick="${isEpisode ? `startEditEpComment` : `startEditComment`}('${cd.id}', '${safeText}')">Edit</span>` : ''}
+          ${isMyComment ? `<span onclick="deleteComment('${cd.id}',${isEpisode})" style="color:#d32f2f;">Hapus</span>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  window.startEditComment = function(id, currentText) {
+    if(!currentUser) return;
+    editingCommentId = id;
+    replyingToComment = null;
+    const commentText = document.getElementById('comment-text');
+    if(commentText) {
+      commentText.value = currentText;
+      commentText.focus();
+    }
+    const btnSend = document.getElementById('btn-send-comment');
+    if(btnSend) btnSend.textContent = "Simpan Perubahan Komentar";
+  }
+
+  window.deleteComment = async function(commentId, isEpisode = false) {
+    if(confirm("Hapus komentar ini?")) {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const seriesParam = urlParams.get('series');
+        const epParam = urlParams.get('ep');
+        const path = isEpisode ? `episodes/${currentEpisodeData?.id || epParam}/comments/${commentId}` : `anime_series/${seriesParam}/comments/${commentId}`;
+        await deleteDoc(doc(db, path));
+      } catch(e) { alert("Gagal menghapus: " + e.message); }
+    }
+  }
+
+  window.startEditEpComment = function(id, currentText) {
+    if(!currentUser) return;
+    editingEpCommentId = id;
+    replyingToEpComment = null;
+    const commentText = document.getElementById('ep-comment-text');
+    if(commentText) {
+      commentText.value = currentText;
+      commentText.focus();
+    }
+    const btnSend = document.getElementById('btn-send-ep-comment');
+    if(btnSend) btnSend.textContent = "Simpan Perubahan Komentar";
+  }
+
+  function attachCommentReactionListener(commentId) {
+    onValue(ref(rtdb, `comment_reactions/${commentId}`), (snapRx) => {
+      const rxData = snapRx.val() || {};
+      const userUid = currentUser?.uid;
+
+      let mySelectedEmoji = null;
+      if (userUid) {
+        onValue(ref(rtdb, `comment_user_reactions/${commentId}/${userUid}`), (userSnap) => {
+          mySelectedEmoji = userSnap.val();
+          renderCommentReactionBadges(commentId, rxData, mySelectedEmoji);
+        }, { onlyOnce: true });
+      } else {
+        renderCommentReactionBadges(commentId, rxData, null);
+      }
+    }, (error) => { console.error("Error loading comment reactions:", error); });
+  }
+
+  function renderCommentReactionBadges(commentId, rxData, mySelectedEmoji) {
+    const rowEl = document.getElementById(`comm-reactions-row-${commentId}`);
+    if(rowEl) {
+      let badgeHtml = "";
+      Object.keys(rxData).forEach(em => {
+        if(rxData[em] > 0) {
+          const isActive = (em === mySelectedEmoji);
+          badgeHtml += `<span class="msg-react-badge ${isActive ? 'active' : ''}" onclick="addCommentReaction('${commentId}', '${em}')">${em} <b>${rxData[em]}</b></span>`;
+        }
+      });
+      rowEl.innerHTML = badgeHtml;
+    }
+  }
+
+  window.startCommentReply = function(id, author, text) {
+    if(!currentUser) { alert("Harap login dulu!"); showLoginModal(); return; }
+    replyingToComment = { id, author, text };
+    editingCommentId = null;
+    const preview = document.getElementById('comment-reply-preview');
+    const previewText = document.getElementById('comment-reply-preview-text');
+    if(preview && previewText) {
+      previewText.textContent = `Membalas @${author}: "${text}"`;
+      preview.classList.remove('hidden');
+    }
+    document.getElementById('comment-text')?.focus();
+  }
+
+  window.cancelCommentReply = function() {
+    replyingToComment = null;
+    editingCommentId = null;
+    document.getElementById('comment-reply-preview')?.classList.add('hidden');
+    const btnSend = document.getElementById('btn-send-comment');
+    if(btnSend) btnSend.textContent = "Kirim Komentar";
+  }
+
+  function updateCommentFormUI() {
+    const wrapper = document.getElementById('comment-form-wrapper');
+    if(!wrapper) return;
+
+    if(currentUser) {
+      wrapper.innerHTML = `
+        <div id="comment-image-previews" class="hidden"></div>
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+          <button class="btn-secondary" onclick="toggleStickerPanel(event, 'comment-text')" title="Stiker & GIF" style="margin:0; height:38px; padding:0 10px; display:inline-flex; align-items:center; justify-content:center;">
+            <svg class="app-icon" viewBox="0 0 24 24" width="18" height="18"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+          </button>
+          <input type="file" id="comment-file-input" accept="image/*" multiple class="hidden" onchange="handleMultipleImageUpload(event, 'comment')" />
+          <button class="btn-secondary" onclick="document.getElementById('comment-file-input').click()" title="Kirim Gambar (Bisa Banyak)" style="margin:0; height:38px; padding:0 10px; display:inline-flex; align-items:center; justify-content:center;">
+            <svg class="app-icon" viewBox="0 0 24 24" width="16" height="16"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+          </button>
+          <textarea id="comment-text" rows="2" placeholder="Tulis komentar..." style="margin:0 !important; flex:1; resize:none;" onfocus="activeInputId='comment-text'"></textarea>
+        </div>
+        <button id="btn-send-comment">Kirim Komentar</button>
+      `;
+      const btnSendComm = document.getElementById('btn-send-comment');
+      if(btnSendComm) {
+        btnSendComm.onclick = async () => {
+          const textInput = document.getElementById('comment-text');
+          const text = textInput ? textInput.value.trim() : '';
+          if(!text && commentStagedImages.length === 0) return;
+
+          try {
+            const seriesParam = new URLSearchParams(window.location.search).get('series');
+            if(editingCommentId) {
+              await updateDoc(doc(db, "anime_series", seriesParam, "comments", editingCommentId), { text, images: commentStagedImages });
+              editingCommentId = null;
+              btnSendComm.textContent = "Kirim Komentar";
+            } else {
+              const payload = { 
+                uid: currentUser.uid, 
+                text, 
+                images: [...commentStagedImages],
+                createdAt: serverTimestamp() 
+              };
+
+              if(replyingToComment) {
+                payload.replyToId = replyingToComment.id;
+              }
+
+              const docRef = await addDoc(collection(db, "anime_series", seriesParam, "comments"), payload);
+              attachCommentReactionListener(docRef.id);
+            }
+
+            if(textInput) textInput.value = "";
+            commentStagedImages = [];
+            renderImagePreviews('comment');
+            cancelCommentReply();
+          } catch(err) { alert("Gagal mengirim komentar: " + err.message); }
+        };
+      }
+    } else {
+      wrapper.innerHTML = `<div style="text-align:center; padding:10px;"><i>Harap <a href="#" onclick="showLoginModal(); return false;">Login</a> untuk berkomentar.</i></div>`;
+    }
+  }
+
+  let clickedIklan = false;
+  const urlIklan = "https://directoryeditorweep.com/ir3f1hg3s2?key=3066552ea46185c16739ac188c88543e";
+  let _pendingVideoUrl = '';
+  let isHumanVerified = false;
+
+  window.startCokWithAd = function(btn) {
+    if (!isHumanVerified) {
+      alert("⚠️ Harap centang kotak verifikasi 'Saya bukan robot' terlebih dahulu!");
+      return;
+    }
+
+    if (!clickedIklan) {
+      window.open(urlIklan, '_blank');
+      clickedIklan = true;
+    }
+    if (_pendingVideoUrl) {
+      actualRenderVideoPlayer(_pendingVideoUrl);
+    }
+  };
+
+  window.verifyHuman = function(checkbox) {
+    if (checkbox.checked) {
+      isHumanVerified = true;
+      const playBtn = document.getElementById('play');
+      if (playBtn) {
+        playBtn.style.opacity = '1';
+        playBtn.style.cursor = 'pointer';
+        playBtn.title = "Putar Video";
+      }
+      checkbox.disabled = true;
+      checkbox.parentElement.style.borderColor = '#4caf50';
+    }
+  }
+
+  function renderVideoPlayer(targetUrl) {
+    _pendingVideoUrl = targetUrl;
+    const p = document.getElementById('player-wrapper');
+    if(!p) return;
+    if (!targetUrl) {
+      p.innerHTML = `<div style="color:white; text-align:center; padding:40px;">Video server tidak tersedia.</div>`;
+      return;
+    }
+
+    if (clickedIklan && isHumanVerified) {
+      actualRenderVideoPlayer(targetUrl);
+      return;
+    }
+
+    const thumb = currentEpisodeData?.thumbnailUrl || '';
+    
+    p.innerHTML = `
+      <div class="video-overlay-play" style="background-image: url('${thumb}'); display: flex; flex-direction: column; gap: 15px; justify-content: center; align-items: center; padding: 20px; background-color: rgba(0,0,0,0.85);">
+        
+        <div id="antibot-box" style="background: var(--box-bg, #fff); color: var(--text-color, #333); padding: 12px 16px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px; max-width: 320px; width: 100%; border: 1px solid var(--border-color, #ccc);">
+          <input type="checkbox" id="robot-checkbox" style="width: 22px; height: 22px; cursor: pointer;" onclick="verifyHuman(this)" ${isHumanVerified ? 'checked disabled' : ''} />
+          <label for="robot-checkbox" style="font-size: 0.9em; font-weight: bold; cursor: pointer; user-select: none;">Saya bukan robot</label>
+        </div>
+
+        <button id="play" class="gp" onclick="startCokWithAd(this)" style="opacity: ${isHumanVerified ? '1' : '0.5'}; cursor: ${isHumanVerified ? 'pointer' : 'not-allowed;'}" title="Selesaikan verifikasi di atas">
+          <span class="dashicons dashicons-controls-play">▶</span>
+        </button>
+
+      </div>
+    `;
+  }
+
+  function actualRenderVideoPlayer(targetUrl) {
+    const p = document.getElementById('player-wrapper');
+    if(!p) return;
+    if(targetUrl.includes('<iframe')) { 
+      p.innerHTML = targetUrl; 
+    } else { 
+      p.innerHTML = `<iframe src="${targetUrl}" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>`; 
+    }
+  }
+
+  window.switchVideoServer = function(indexStr) {
+    if(!currentEpisodeData || !currentEpisodeData.servers) return;
+    const idx = parseInt(indexStr);
+    const srv = currentEpisodeData.servers[idx];
+    if(srv) {
+      renderVideoPlayer(srv.url);
+    }
+  }
+
+  async function loadEpisodeDetail(seriesId, epNumberStr) {
+    const epNum = parseInt(epNumberStr);
+    const playerView = document.getElementById('player-view');
+    if(playerView) playerView.classList.remove('hidden');
+    
+    try {
+      const sDoc = await getDoc(doc(db, "anime_series", seriesId));
+      if(!sDoc.exists()) {
+        document.getElementById('player-wrapper').innerHTML = `<div style="color:white; text-align:center; padding:40px;">Series tidak ditemukan.</div>`;
+        return;
+      }
+      const sData = sDoc.data();
+
+      const epSnap = await getDocs(query(collection(db, "episodes"), where("seriesId", "==", seriesId)));
+      currentSeriesEpisodesList = [];
+      let currentEpDoc = null;
+
+      epSnap.forEach(e => {
+        let ed = { id: e.id, ...e.data() };
+        currentSeriesEpisodesList.push(ed);
+        if (ed.episodeNumber === epNum) {
+          currentEpDoc = ed;
+        }
+      });
+
+      currentSeriesEpisodesList.sort((a,b) => a.episodeNumber - b.episodeNumber);
+      if(!currentEpDoc) {
+        document.getElementById('player-wrapper').innerHTML = `<div style="color:white; text-align:center; padding:40px;">Episode ${epNum} tidak ditemukan.</div>`;
+        return;
+      }
+
+      currentEpisodeData = currentEpDoc;
+
+      const currentIndex = currentSeriesEpisodesList.findIndex(e => e.episodeNumber === epNum);
+      const prevEp = currentIndex > 0 ? currentSeriesEpisodesList[currentIndex - 1] : null;
+      const nextEp = currentIndex < currentSeriesEpisodesList.length - 1 ? currentSeriesEpisodesList[currentIndex + 1] : null;
+
+      const btnPrev = document.getElementById('btn-prev-ep');
+      const btnNext = document.getElementById('btn-next-ep');
+      const btnAll = document.getElementById('btn-all-eps');
+
+      if (btnAll) btnAll.href = `?series=${seriesId}`;
+
+      if (btnPrev) {
+        if (prevEp) {
+          btnPrev.href = `?series=${seriesId}&ep=${prevEp.episodeNumber}`;
+          btnPrev.classList.remove('disabled');
+        } else {
+          btnPrev.href = "#";
+          btnPrev.classList.add('disabled');
+        }
+      }
+
+      if (btnNext) {
+        if (nextEp) {
+          btnNext.href = `?series=${seriesId}&ep=${nextEp.episodeNumber}`;
+          btnNext.classList.remove('disabled');
+        } else {
+          btnNext.href = "#";
+          btnNext.classList.add('disabled');
+        }
+      }
+
+      const backLink = document.getElementById('back-to-series-link');
+      if(backLink) backLink.innerHTML = `<a href="?series=${seriesId}" style="text-decoration:none; color:var(--primary-color);">&laquo; Kembali ke ${sData.title}</a>`;
+      
+      const epTitleEl = document.getElementById('view-ep-title');
+      if(epTitleEl) epTitleEl.textContent = `Episode ${currentEpisodeData.episodeNumber}: ${currentEpisodeData.title||''}`;
+      
+      const epUploaderInfo = document.getElementById('view-ep-uploader-info');
+      if(epUploaderInfo) {
+        epUploaderInfo.innerHTML = renderUploaderBadge(currentEpisodeData.authorUid, currentEpisodeData.authorName, currentEpisodeData.authorAvatar, currentEpisodeData.authorBorder, currentEpisodeData.createdAt);
+      }
+
+      const seriesTitleEl = document.getElementById('view-series-title');
+      if(seriesTitleEl) seriesTitleEl.textContent = `Series: ${sData.title}`;
+      
+      let serversList = currentEpisodeData.servers || [];
+      if (serversList.length === 0) {
+        if (currentEpisodeData.videoUrl) serversList.push({ name: 'Server Utama (HD)', url: currentEpisodeData.videoUrl });
+        if (currentEpisodeData.videoUrlAlt) serversList.push({ name: 'Server Alternatif / Backup', url: currentEpisodeData.videoUrlAlt });
+      }
+      currentEpisodeData.servers = serversList;
+
+      const serverSelector = document.getElementById('server-selector');
+      if (serverSelector) {
+        let sHtml = '';
+        currentEpisodeData.servers.forEach((srv, index) => {
+          sHtml += `<option value="${index}">${srv.name}</option>`;
+        });
+        serverSelector.innerHTML = sHtml;
+      }
+
+      renderVideoPlayer(currentEpisodeData.servers[0]?.url || '');
+      loadEpCommentsRealtime(currentEpisodeData.id);
+      updateEpCommentFormUI();
+    } catch(err) {
+      console.error("Error loading episode detail:", err);
+      const playerWrapper = document.getElementById('player-wrapper');
+      if(playerWrapper) {
+        playerWrapper.innerHTML = `<div style="color:white; text-align:center; padding:40px;">Gagal memuat detail episode: ${err.message}</div>`;
+      }
+    }
+  }
+
+  function loadEpCommentsRealtime(epId) {
+    const epCommContainer = document.getElementById('ep-comments-list-container');
+    if(!epCommContainer) return;
+
+    if (epCommentsUnsubscribe) epCommentsUnsubscribe();
+
+    const qEpComm = query(collection(db, "episodes", epId, "comments"), orderBy("createdAt", "asc"));
+    
+    epCommentsUnsubscribe = onSnapshot(qEpComm, (snap) => {
+      let commentsMap = {};
+      let rootComments = [];
+
+      snap.forEach(c => {
+        const cd = { id: c.id, ...c.data() };
+        commentsMap[cd.id] = { ...cd, replies: [] };
+      });
+
+      Object.values(commentsMap).forEach(cd => {
+        if (cd.replyToId && commentsMap[cd.replyToId]) {
+          commentsMap[cd.replyToId].replies.push(cd);
+        } else {
+          rootComments.push(cd);
+        }
+      });
+
+      let cHtml = "";
+      rootComments.forEach(cd => {
+        cHtml += renderRootCommentTree(cd, true, epId);
+      });
+
+      epCommContainer.innerHTML = cHtml || "<p style='color:var(--text-muted); text-align:center;'>Belum ada komentar di episode ini.</p>";
+
+      Object.keys(commentsMap).forEach(cid => {
+        attachCommentReactionListener(cid);
+      });
+    }, (error) => { console.error("Error loading episode comments:", error); });
+  }
+
+  window.startEpCommentReply = function(id, author, text) {
+    if(!currentUser) { alert("Harap login dulu!"); showLoginModal(); return; }
+    replyingToEpComment = { id, author, text };
+    editingEpCommentId = null;
+    const preview = document.getElementById('ep-comment-reply-preview');
+    const previewText = document.getElementById('ep-comment-reply-preview-text');
+    if(preview && previewText) {
+      previewText.textContent = `Membalas @${author}: "${text}"`;
+      preview.classList.remove('hidden');
+    }
+    document.getElementById('ep-comment-text')?.focus();
+  }
+
+  window.cancelEpCommentReply = function() {
+    replyingToEpComment = null;
+    editingEpCommentId = null;
+    document.getElementById('ep-comment-reply-preview')?.classList.add('hidden');
+    const btnSend = document.getElementById('btn-send-ep-comment');
+    if(btnSend) btnSend.textContent = "Kirim Komentar Episode";
+  }
+
+  function updateEpCommentFormUI() {
+    const wrapper = document.getElementById('ep-comment-form-wrapper');
+    if(!wrapper) return;
+
+    if(currentUser) {
+      wrapper.innerHTML = `
+        <div id="ep-comment-image-previews" class="hidden"></div>
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+          <button class="btn-secondary" onclick="toggleStickerPanel(event, 'ep-comment-text')" title="Stiker & GIF" style="margin:0; height:38px; padding:0 10px; display:inline-flex; align-items:center; justify-content:center;">
+            <svg class="app-icon" viewBox="0 0 24 24" width="18" height="18"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+          </button>
+          <input type="file" id="ep-comment-file-input" accept="image/*" multiple class="hidden" onchange="handleMultipleImageUpload(event, 'ep-comment')" />
+          <button class="btn-secondary" onclick="document.getElementById('ep-comment-file-input').click()" title="Kirim Gambar (Bisa Banyak)" style="margin:0; height:38px; padding:0 10px; display:inline-flex; align-items:center; justify-content:center;">
+            <svg class="app-icon" viewBox="0 0 24 24" width="16" height="16"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+          </button>
+          <textarea id="ep-comment-text" rows="2" placeholder="Tulis komentar untuk episode ini..." style="margin:0 !important; flex:1; resize:none;" onfocus="activeInputId='ep-comment-text'"></textarea>
+        </div>
+        <button id="btn-send-ep-comment">Kirim Komentar Episode</button>
+      `;
+      const btnSendEpComm = document.getElementById('btn-send-ep-comment');
+      if(btnSendEpComm) {
+        btnSendEpComm.onclick = async () => {
+          const textInput = document.getElementById('ep-comment-text');
+          const text = textInput ? textInput.value.trim() : '';
+          if(!text && epCommentStagedImages.length === 0) return;
+          
+          try {
+            if(editingEpCommentId) {
+              await updateDoc(doc(db, "episodes", currentEpisodeData.id, "comments", editingEpCommentId), { text, images: epCommentStagedImages });
+            } else {
+              const payload = { 
+                uid: currentUser.uid, 
+                text, 
+                images: [...epCommentStagedImages],
+                createdAt: serverTimestamp() 
+              };
+
+              if(replyingToEpComment) {
+                payload.replyToId = replyingToEpComment.id;
+              }
+
+              const docRef = await addDoc(collection(db, "episodes", currentEpisodeData.id, "comments"), payload);
+              attachCommentReactionListener(docRef.id);
+            }
+
+            if(textInput) textInput.value = "";
+            epCommentStagedImages = [];
+            renderImagePreviews('ep-comment');
+            cancelEpCommentReply();
+          } catch(err) { alert("Gagal mengirim komentar episode: " + err.message); }
+        };
+      }
+    } else {
+      wrapper.innerHTML = `<div style="text-align:center; padding:10px;"><i>Harap <a href="#" onclick="showLoginModal(); return false;">Login</a> untuk berkomentar pada episode ini.</i></div>`;
+    }
+  }
+
+  handleRouting();
+</script>
